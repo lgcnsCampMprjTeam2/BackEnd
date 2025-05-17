@@ -24,7 +24,7 @@ public class Post {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id", nullable = false)
+    @JoinColumn(name = "question_id")
     private CSQuestion csQuestion;
 
     @Column(name = "created_at", nullable = false)
