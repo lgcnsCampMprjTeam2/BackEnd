@@ -1,5 +1,6 @@
 package com.lgcns.backend.post.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lgcns.backend.global.domain.Category;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +12,8 @@ public class PostRequest {
     @Builder
     public static class PostCreateRequest {
         private String title;
+
+        @JsonProperty("question_id")
         private Long questionId;
         private String content;
         private String category;
