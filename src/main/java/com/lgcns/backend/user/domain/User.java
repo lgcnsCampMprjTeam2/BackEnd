@@ -27,7 +27,7 @@ public class User {
     private String nickname;
 
     // @Column(nullable = false)
-    private String profile_image;
+    private String profileImage;
 
     private String provider;
 }

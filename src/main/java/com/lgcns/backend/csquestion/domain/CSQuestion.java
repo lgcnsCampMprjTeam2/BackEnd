@@ -24,7 +24,7 @@ public class CSQuestion {
     private Category category;
     
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @Column(nullable = false, unique = true)
     private String content;
