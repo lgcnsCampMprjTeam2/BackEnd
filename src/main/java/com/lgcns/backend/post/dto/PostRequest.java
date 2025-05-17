@@ -1,5 +1,6 @@
 package com.lgcns.backend.post.dto;
 
+import com.lgcns.backend.global.domain.Category;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +16,13 @@ public class PostRequest {
         private String category;
     }
 
-
+    @Getter
+    @Builder
+    public static class PostUpdateRequest {
+        private String title;
+        private String content;
+        private String category;
+    }
 
 
 }

@@ -1,10 +1,12 @@
 package com.lgcns.backend.post.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lgcns.backend.global.domain.Category;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostResponse {
 
@@ -16,11 +18,40 @@ public class PostResponse {
         private Long questionId;
         private String title;
         private String content;
-        private String category;
+        private Category category;
 
         @JsonProperty("created_at")
         private LocalDateTime createdAt;
     }
 
+    @Getter
+    @Builder
+    public static class PostListResponse {
+        private List<PostSummary> posts;
+
+        @Getter
+        @Builder
+        public static class PostSummary {
+            private Long postId;
+            private String title;
+            private Category category;
+
+            @JsonProperty("created_at")
+            private LocalDateTime createdAt;
+        }
+    }
+
+    @Getter
+    @Builder
+    public static class PostDetailResponse {
+        private Long userId;
+        private Long questionId;
+        private String content;
+        private String title;
+        private Category category;
+
+        @JsonProperty("created_at")
+        private LocalDateTime createdAt;
+    }
 
 }
