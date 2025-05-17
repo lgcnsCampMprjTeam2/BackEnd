@@ -1,6 +1,7 @@
 package com.lgcns.backend.comment.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lgcns.backend.comment.domain.Comment;
 import com.lgcns.backend.global.domain.Category;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,16 @@ public class CommentResponse {
 
         @JsonProperty("created_at")
         private LocalDateTime createdAt;
+
+        public static CommentCreateResponse from(Comment comment) {
+            return CommentCreateResponse.builder()
+                    .id(comment.getId())
+                    .userId(comment.getUser().getId())
+                    .postId(comment.getPost().getId())
+                    .content(comment.getContent())
+                    .createdAt(comment.getCreatedAt())
+                    .build();
+        }
     }
 
     @Getter
@@ -42,6 +53,16 @@ public class CommentResponse {
 
         @JsonProperty("created_at")
         private LocalDateTime createdAt;
+
+        public static CommentUpdateResponse from(Comment comment) {
+            return CommentUpdateResponse.builder()
+                    .id(comment.getId())
+                    .userId(comment.getUser().getId())
+                    .postId(comment.getPost().getId())
+                    .content(comment.getContent())
+                    .createdAt(comment.getCreatedAt())
+                    .build();
+        }
     }
 
     @Getter

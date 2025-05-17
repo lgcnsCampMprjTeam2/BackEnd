@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+import static com.lgcns.backend.post.dto.PostRequest.*;
 import static com.lgcns.backend.post.dto.PostResponse.*;
 
 @Service
@@ -51,12 +52,12 @@ public class PostService {
 
     //게시글 생성
     @Transactional(readOnly = false)
-    public PostCreateResponse createPost(PostRequest.PostCreateRequest request, Long userId) {
+    public PostCreateResponse createPost(PostCreateRequest request, Long userId) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("not found"));
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다"));
         CSQuestion csQuestion = cSQuestionRepository.findById(request.getQuestionId())
-                .orElseThrow(() -> new EntityNotFoundException("not found"));
+                .orElseThrow(() -> new EntityNotFoundException("질문을 찾을 수 없습니다"));
 
         Post post = Post.builder()
                 .user(user)
@@ -72,7 +73,7 @@ public class PostService {
 
     //게시글 수정
     @Transactional
-    public PostUpdateResponse updatePost(Long postId, PostRequest.PostUpdateRequest request, Long userId){
+    public PostUpdateResponse updatePost(Long postId, PostUpdateRequest request, Long userId){
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
 

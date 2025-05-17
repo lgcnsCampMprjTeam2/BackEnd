@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.lgcns.backend.post.dto.PostRequest.*;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/comm")
@@ -36,7 +38,7 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<CustomResponse<?>> createPost(
-            @RequestBody PostRequest.PostCreateRequest request
+            @RequestBody PostCreateRequest request
             ){
         //TODO 사용자 id
         Long userId = 1L;
@@ -46,7 +48,7 @@ public class PostController {
     @PatchMapping("/{postId}")
     public ResponseEntity<CustomResponse<?>> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostRequest.PostUpdateRequest request
+            @RequestBody PostUpdateRequest request
     ){
         //TODO 사용자 id
         Long userId = 1L;
