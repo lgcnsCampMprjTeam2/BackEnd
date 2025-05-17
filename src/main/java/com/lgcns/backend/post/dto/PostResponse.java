@@ -70,7 +70,7 @@ public class PostResponse {
 
     @Getter
     @Builder
-    public static class PostListResponse {
+    public static class  PostListResponse {
 
         private List<PostSummary> posts;
 

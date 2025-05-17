@@ -31,4 +31,8 @@ public class Comment {
 
     @Column(nullable = false)
     private String content;
+
+    public void updateComment(String content){
+        this.content = content;
+    }
 }

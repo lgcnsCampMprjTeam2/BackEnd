@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static com.lgcns.backend.post.dto.PostRequest.*;
@@ -51,7 +52,7 @@ public class PostService {
     }
 
     //게시글 생성
-    @Transactional(readOnly = false)
+    @Transactional
     public PostCreateResponse createPost(PostCreateRequest request, Long userId) {
 
         User user = userRepository.findById(userId)
@@ -65,6 +66,7 @@ public class PostService {
                 .content(request.getContent())
                 .title(request.getTitle())
                 .category(Category.valueOf(request.getCategory()))
+                .createdAt(LocalDateTime.now())
                 .build();
 
         postRepository.save(post);
@@ -86,6 +88,7 @@ public class PostService {
     }
 
     //게시글 삭제
+    @Transactional
     public void deletePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
