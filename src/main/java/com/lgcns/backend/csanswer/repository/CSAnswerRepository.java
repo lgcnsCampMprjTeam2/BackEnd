@@ -1,8 +1,7 @@
-package com.lgcns.backend.repository;
+package com.lgcns.backend.csanswer.repository;
 
+import com.lgcns.backend.csanswer.domain.CSAnswer;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.lgcns.backend.entity.CSAnswer;
 
 public interface CSAnswerRepository extends JpaRepository<CSAnswer, Long>{
 

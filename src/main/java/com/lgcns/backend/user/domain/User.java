@@ -1,4 +1,4 @@
-package com.lgcns.backend.entity;
+package com.lgcns.backend.user.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
