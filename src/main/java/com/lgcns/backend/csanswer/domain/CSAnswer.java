@@ -27,7 +27,7 @@ public class CSAnswer {
     private String feedback;
 
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
