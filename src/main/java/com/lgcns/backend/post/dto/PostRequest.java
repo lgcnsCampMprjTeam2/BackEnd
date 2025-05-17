@@ -23,6 +23,9 @@ public class PostRequest {
     @Builder
     public static class PostUpdateRequest {
         private String title;
+
+        @JsonProperty("question_id")
+        private Long questionId;
         private String content;
         private String category;
     }
