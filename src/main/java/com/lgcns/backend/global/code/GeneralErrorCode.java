@@ -13,6 +13,7 @@ public enum GeneralErrorCode implements BaseErrorCode {
     _UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증이 필요합니다."),
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
     _NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404", "리소스를 찾을 수 없습니다."),
+    _EMAIL_USED(HttpStatus.BAD_REQUEST, "USER401", "이미 존재하는 이메일입니다.")
     ;
 
     private final HttpStatus httpStatus;

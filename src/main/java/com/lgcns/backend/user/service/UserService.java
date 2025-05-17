@@ -19,8 +19,8 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
 
-    public String signUp(SignUpRequestDto dto) {
-        Optional<User> user = userRepository.findByUsername(dto.getEmail());
+    public void signUp(SignUpRequestDto dto) {
+        Optional<User> user = userRepository.findByEmail(dto.getEmail());
 
         if (user.isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다");
@@ -37,6 +37,5 @@ public class UserService {
 
         userRepository.save(newUser);
 
-        return "회원가입 성공";
     }
 }
