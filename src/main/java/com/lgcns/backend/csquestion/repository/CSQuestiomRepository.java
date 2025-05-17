@@ -1,8 +1,7 @@
-package com.lgcns.backend.repository;
+package com.lgcns.backend.csquestion.repository;
 
+import com.lgcns.backend.csquestion.domain.CSQuestion;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.lgcns.backend.entity.CSQuestion;
 
 public interface CSQuestiomRepository extends JpaRepository<CSQuestion, Long>{
     

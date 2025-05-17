@@ -1,8 +1,7 @@
-package com.lgcns.backend.repository;
+package com.lgcns.backend.user.repository;
 
+import com.lgcns.backend.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.lgcns.backend.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long>{
 

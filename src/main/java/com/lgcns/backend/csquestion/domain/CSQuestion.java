@@ -1,9 +1,8 @@
-package com.lgcns.backend.entity;
+package com.lgcns.backend.csquestion.domain;
 
 import java.time.LocalDateTime;
 
-import com.lgcns.backend.type.Category;
-
+import com.lgcns.backend.global.domain.Category;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
