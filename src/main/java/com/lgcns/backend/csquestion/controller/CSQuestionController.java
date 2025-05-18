@@ -9,6 +9,9 @@ import com.lgcns.backend.global.response.CustomResponse;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,8 +26,10 @@ public class CSQuestionController {
     @Autowired CSQuestionService csQuestionService;
     
     @GetMapping
-    public ResponseEntity<?> getCSQuestionList(@RequestParam(required = false) String category) {
-        List<CSQuestionResponse> list = csQuestionService.getCSQuestionList(category);
+    public ResponseEntity<?> getCSQuestionList(@RequestParam(required = false) String category, @RequestParam(defaultValue = "1") int page) {
+        Pageable pageable = PageRequest.of(page-1, 10);
+
+        Page<CSQuestionResponse> list = csQuestionService.getCSQuestionList(category, pageable);
         return ResponseEntity.ok(CustomResponse.ok(list));
     }
 
