@@ -3,8 +3,6 @@ package com.lgcns.backend.unit.post.service;
 import com.lgcns.backend.csquestion.domain.CSQuestion;
 import com.lgcns.backend.csquestion.repository.CSQuestionRepository;
 import com.lgcns.backend.global.domain.Category;
-import com.lgcns.backend.post.dto.PostRequest;
-import com.lgcns.backend.post.dto.PostResponse;
 import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.post.respository.PostRepository;
 import com.lgcns.backend.post.service.PostService;
@@ -109,6 +107,9 @@ class PostServiceTest {
         //then
         assertNotNull(response);
         assertEquals(post.getTitle(), response.getTitle());
+        assertEquals(post.getContent(), response.getContent());
+        assertEquals(post.getCategory(), response.getCategory());
+        assertEquals(post.getCreatedAt(), response.getCreatedAt());
 
         verify(postRepository).findById(1L);
     }
@@ -127,6 +128,7 @@ class PostServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(post.getUser()));
         when(csQuestionRepository.findById(1L)).thenReturn(Optional.of(post.getCsQuestion()));
+        //인자로 어떤 Post 객체가 들어오든 상관없이 내가 미리 만든 post 객체를 리턴
         when(postRepository.save(any(Post.class))).thenReturn(post);
 
         //when
@@ -135,6 +137,10 @@ class PostServiceTest {
         //then
         assertNotNull(response);
         assertEquals("제목", response.getTitle());
+        assertEquals("내용", response.getContent());
+        assertEquals(1L, response.getQuestionId());
+        assertEquals(Category.기타, response.getCategory());
+
 
         verify(postRepository).save(any(Post.class));
     }
@@ -156,6 +162,9 @@ class PostServiceTest {
         //then
         assertNotNull(response);
         assertEquals("제목", response.getTitle());
+        assertEquals("내용", response.getContent());
+        assertEquals(1L, response.getQuestionId());
+        assertEquals(Category.기타, response.getCategory());
 
         verify(postRepository).findById(1L);
 

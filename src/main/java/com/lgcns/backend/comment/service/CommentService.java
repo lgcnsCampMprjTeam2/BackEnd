@@ -29,7 +29,9 @@ public class CommentService {
 
     //댓글 목록 조회
     public CommentListResponse getCommentList(Long postId){
-        List<Comment> comments = commentRepository.findByPostId(postId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+        List<Comment> comments = commentRepository.findByPost(post);
         return CommentListResponse.from(comments);
     }
 
