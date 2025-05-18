@@ -55,4 +55,10 @@ public class CustomResponse<T> {
         this.result = result;
         return this;
     }
+
+    // json 객체는 lombok get 함수 작동 안해서 따로 정의
+    public Boolean isSuccess() {
+        return this.isSuccess;
+    }
+
 }
