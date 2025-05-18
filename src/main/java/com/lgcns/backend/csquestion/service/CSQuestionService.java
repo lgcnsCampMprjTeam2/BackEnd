@@ -1,5 +1,7 @@
 package com.lgcns.backend.csquestion.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,18 @@ public class CSQuestionService {
         }
 
         CSQuestion q = opt.get();
+        CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent());
+
+        return res;
+    }
+
+    public CSQuestionResponse getTodayCSQuestion(){
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        
+        CSQuestion q = csQuestionRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+
         CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent());
 
         return res;
