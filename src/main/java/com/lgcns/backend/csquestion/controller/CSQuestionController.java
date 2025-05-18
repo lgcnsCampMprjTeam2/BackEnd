@@ -35,4 +35,10 @@ public class CSQuestionController {
         return ResponseEntity.ok(CustomResponse.ok(question));
     }
 
+    @GetMapping("/today")
+    public ResponseEntity<?> getTodayCSQuestion() {
+        CSQuestionResponse question = csQuestionService.getTodayCSQuestion();
+
+        return ResponseEntity.ok(CustomResponse.ok(question));
+    }
 }
