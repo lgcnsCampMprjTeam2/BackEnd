@@ -30,4 +30,6 @@ public class User {
     private String profileImage;
 
     private String provider;
+
+    private String role;
 }
