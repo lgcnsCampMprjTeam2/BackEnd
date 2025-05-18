@@ -1,7 +1,7 @@
 package com.lgcns.backend.comment.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lgcns.backend.global.domain.Category;
+import com.lgcns.backend.comment.entity.Comment;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -25,6 +25,16 @@ public class CommentResponse {
 
         @JsonProperty("created_at")
         private LocalDateTime createdAt;
+
+        public static CommentCreateResponse from(Comment comment) {
+            return CommentCreateResponse.builder()
+                    .id(comment.getId())
+                    .userId(comment.getUser().getId())
+                    .postId(comment.getPost().getId())
+                    .content(comment.getContent())
+                    .createdAt(comment.getCreatedAt())
+                    .build();
+        }
     }
 
     @Getter
@@ -42,11 +52,22 @@ public class CommentResponse {
 
         @JsonProperty("created_at")
         private LocalDateTime createdAt;
+
+        public static CommentUpdateResponse from(Comment comment) {
+            return CommentUpdateResponse.builder()
+                    .id(comment.getId())
+                    .userId(comment.getUser().getId())
+                    .postId(comment.getPost().getId())
+                    .content(comment.getContent())
+                    .createdAt(comment.getCreatedAt())
+                    .build();
+        }
     }
 
     @Getter
     @Builder
     public static class CommentListResponse {
+
         private List<CommentSummary> comments;
 
         @Getter
@@ -62,6 +83,26 @@ public class CommentResponse {
 
             @JsonProperty("created_at")
             private LocalDateTime createdAt;
+
+            public static CommentSummary fromEntity(Comment comment){
+                return CommentSummary.builder()
+                        .commentId(comment.getId())
+                        .userId(comment.getUser().getId())
+                        .content(comment.getContent())
+                        .createdAt(comment.getCreatedAt())
+                        .build();
+            }
+        }
+
+        public static CommentListResponse from(List<Comment> comments) {
+            List<CommentSummary> commentSummaries = comments.stream()
+                    .map(CommentSummary::fromEntity)
+                    .toList();
+
+            return CommentListResponse.builder()
+                    .comments(commentSummaries)
+                    .build();
         }
     }
 }
+
