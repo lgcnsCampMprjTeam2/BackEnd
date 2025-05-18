@@ -6,6 +6,7 @@ import com.lgcns.backend.global.response.CustomResponse;
 import com.lgcns.backend.security.util.JwtUtil;
 import com.lgcns.backend.user.dto.request.LoginRequestDto;
 import com.lgcns.backend.user.dto.request.SignUpRequestDto;
+import com.lgcns.backend.user.dto.request.UpdateUserRequestDto;
 import com.lgcns.backend.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,4 +72,21 @@ public class UserController {
                 .status(GeneralSuccessCode._OK.getHttpStatus())
                 .body(CustomResponse.success(GeneralSuccessCode._OK, "회원 탈퇴 완료"));
     }
+
+    @PostMapping("/user/update")
+    public ResponseEntity<CustomResponse<String>> updateUser(@AuthenticationPrincipal UserDetails userDetails,
+                           @RequestBody UpdateUserRequestDto dto) {
+
+        CustomResponse<String> response = userService.updateUser(userDetails.getUsername(), dto);
+
+        // 모든 오류 케이스에 대해 오류 메시지 달리하여 출력
+        if (!response.isSuccess()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST) 
+                    .body(response);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
 }
