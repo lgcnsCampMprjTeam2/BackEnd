@@ -1,10 +1,12 @@
 package com.lgcns.backend.user.controller;
 
 import com.lgcns.backend.global.code.GeneralErrorCode;
+import com.lgcns.backend.global.code.GeneralSuccessCode;
 import com.lgcns.backend.global.response.CustomResponse;
 import com.lgcns.backend.security.util.JwtUtil;
 import com.lgcns.backend.user.dto.request.LoginRequestDto;
 import com.lgcns.backend.user.dto.request.SignUpRequestDto;
+import com.lgcns.backend.user.dto.request.UpdateUserRequestDto;
 import com.lgcns.backend.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,6 +60,32 @@ public class UserController {
         }
         
         // 성공인 경우
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/user/delete")
+    public ResponseEntity<CustomResponse<String>> deleteUser(@AuthenticationPrincipal UserDetails userDetails) {
+
+        userService.deleteUser(userDetails.getUsername()); // 이메일 기반
+
+        return ResponseEntity
+                .status(GeneralSuccessCode._OK.getHttpStatus())
+                .body(CustomResponse.success(GeneralSuccessCode._OK, "회원 탈퇴 완료"));
+    }
+
+    @PostMapping("/user/update")
+    public ResponseEntity<CustomResponse<String>> updateUser(@AuthenticationPrincipal UserDetails userDetails,
+                           @RequestBody UpdateUserRequestDto dto) {
+
+        CustomResponse<String> response = userService.updateUser(userDetails.getUsername(), dto);
+
+        // 모든 오류 케이스에 대해 오류 메시지 달리하여 출력
+        if (!response.isSuccess()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST) 
+                    .body(response);
+        }
+
         return ResponseEntity.ok(response);
     }
 
