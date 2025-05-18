@@ -39,4 +39,10 @@ public class Post {
 
     @Column(nullable = false)
     private String content;
+
+    public void updatePost(Category category, String title, String content) {
+        this.category = category;
+        this.title = title;
+        this.content = content;
+    }
 }
