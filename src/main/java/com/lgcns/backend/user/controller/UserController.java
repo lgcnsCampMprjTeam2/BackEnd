@@ -1,6 +1,7 @@
 package com.lgcns.backend.user.controller;
 
 import com.lgcns.backend.global.code.GeneralErrorCode;
+import com.lgcns.backend.global.code.GeneralSuccessCode;
 import com.lgcns.backend.global.response.CustomResponse;
 import com.lgcns.backend.security.util.JwtUtil;
 import com.lgcns.backend.user.dto.request.LoginRequestDto;
@@ -13,6 +14,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,4 +62,13 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/user/delete")
+    public ResponseEntity<CustomResponse<String>> deleteUser(@AuthenticationPrincipal UserDetails userDetails) {
+
+        userService.deleteUser(userDetails.getUsername()); // 이메일 기반
+
+        return ResponseEntity
+                .status(GeneralSuccessCode._OK.getHttpStatus())
+                .body(CustomResponse.success(GeneralSuccessCode._OK, "회원 탈퇴 완료"));
+    }
 }

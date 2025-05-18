@@ -25,9 +25,10 @@ public class CSQuestion {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;
-    
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false, unique = true)
     private String content;
+}
