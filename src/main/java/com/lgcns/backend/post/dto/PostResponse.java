@@ -2,7 +2,7 @@ package com.lgcns.backend.post.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lgcns.backend.global.domain.Category;
-import com.lgcns.backend.post.domain.Post;
+import com.lgcns.backend.post.entity.Post;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.domain.Page;

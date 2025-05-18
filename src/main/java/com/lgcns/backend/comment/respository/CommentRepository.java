@@ -1,6 +1,6 @@
 package com.lgcns.backend.comment.respository;
 
-import com.lgcns.backend.comment.domain.Comment;
+import com.lgcns.backend.comment.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

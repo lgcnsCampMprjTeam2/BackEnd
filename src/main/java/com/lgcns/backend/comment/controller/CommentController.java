@@ -1,14 +1,10 @@
 package com.lgcns.backend.comment.controller;
 
-import com.lgcns.backend.comment.domain.Comment;
-import com.lgcns.backend.comment.dto.CommentRequest;
 import com.lgcns.backend.comment.service.CommentService;
 import com.lgcns.backend.global.response.CustomResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static com.lgcns.backend.comment.dto.CommentRequest.*;
 

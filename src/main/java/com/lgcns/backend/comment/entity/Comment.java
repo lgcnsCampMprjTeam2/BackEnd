@@ -1,7 +1,6 @@
-package com.lgcns.backend.post.domain;
+package com.lgcns.backend.comment.entity;
 
-import com.lgcns.backend.csquestion.domain.CSQuestion;
-import com.lgcns.backend.global.domain.Category;
+import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Post {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,25 +23,16 @@ public class Post {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id")
-    private CSQuestion csQuestion;
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Category category;
-
-    @Column(nullable = false)
-    private String title;
-
     @Column(nullable = false)
     private String content;
 
-    public void updatePost(Category category, String title, String content) {
-        this.category = category;
-        this.title = title;
+    public void updateComment(String content){
         this.content = content;
     }
 }

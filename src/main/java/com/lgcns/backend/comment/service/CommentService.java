@@ -1,11 +1,8 @@
 package com.lgcns.backend.comment.service;
 
-import com.lgcns.backend.comment.domain.Comment;
-import com.lgcns.backend.comment.dto.CommentRequest;
-import com.lgcns.backend.comment.dto.CommentResponse;
+import com.lgcns.backend.comment.entity.Comment;
 import com.lgcns.backend.comment.respository.CommentRepository;
-import com.lgcns.backend.post.domain.Post;
-import com.lgcns.backend.post.dto.PostResponse;
+import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.post.respository.PostRepository;
 import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
