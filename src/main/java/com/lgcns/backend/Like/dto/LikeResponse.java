@@ -12,4 +12,11 @@ public class LikeResponse {
 
     @JsonProperty("is_liked")
     private Boolean isLiked;
+
+    public static LikeResponse from(Long commentId, boolean isLiked) {
+        return LikeResponse.builder()
+                .commentId(commentId)
+                .isLiked(isLiked)
+                .build();
+    }
 }

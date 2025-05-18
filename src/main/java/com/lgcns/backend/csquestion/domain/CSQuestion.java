@@ -10,10 +10,13 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Data
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CSQuestion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,4 +31,3 @@ public class CSQuestion {
 
     @Column(nullable = false, unique = true)
     private String content;
-}

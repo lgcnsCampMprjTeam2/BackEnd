@@ -1,12 +1,9 @@
 package com.lgcns.backend.comment.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.lgcns.backend.comment.domain.Comment;
-import com.lgcns.backend.post.domain.Post;
-import com.lgcns.backend.post.dto.PostResponse;
+import com.lgcns.backend.comment.entity.Comment;
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;

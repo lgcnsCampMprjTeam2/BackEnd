@@ -1,6 +1,6 @@
-package com.lgcns.backend.Like.domain;
+package com.lgcns.backend.Like.entity;
 
-import com.lgcns.backend.comment.domain.Comment;
+import com.lgcns.backend.comment.entity.Comment;
 import com.lgcns.backend.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
