@@ -1,7 +1,9 @@
-package com.lgcns.backend.entity;
+package com.lgcns.backend.csanswer.domain;
 
 import java.time.LocalDateTime;
 
+import com.lgcns.backend.user.domain.User;
+import com.lgcns.backend.csquestion.domain.CSQuestion;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +27,7 @@ public class CSAnswer {
     private String feedback;
 
     @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)

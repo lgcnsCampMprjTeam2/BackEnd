@@ -1,4 +1,4 @@
-package com.lgcns.backend.entity;
+package com.lgcns.backend.user.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,7 +27,9 @@ public class User {
     private String nickname;
 
     // @Column(nullable = false)
-    private String profile_image;
+    private String profileImage;
 
     private String provider;
+
+    private String role;
 }
