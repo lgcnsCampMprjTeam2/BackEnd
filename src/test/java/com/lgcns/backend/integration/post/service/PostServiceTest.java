@@ -3,8 +3,11 @@ package com.lgcns.backend.integration.post.service;
 import com.lgcns.backend.csquestion.domain.CSQuestion;
 import com.lgcns.backend.csquestion.repository.CSQuestionRepository;
 import com.lgcns.backend.global.domain.Category;
+import com.lgcns.backend.post.dto.PostRequest;
+import com.lgcns.backend.post.dto.PostResponse;
 import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.post.respository.PostRepository;
+import com.lgcns.backend.post.service.PostService;
 import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
 import org.assertj.core.api.Assertions;
@@ -19,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static com.lgcns.backend.post.dto.PostRequest.*;
+import static com.lgcns.backend.post.dto.PostResponse.*;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
@@ -30,6 +35,9 @@ public class PostServiceTest {
     private PostRepository postRepository;
 
     @Autowired
+    private PostService postService;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -37,6 +45,7 @@ public class PostServiceTest {
 
     private User user;
     private CSQuestion question;
+
 
     @BeforeEach
     void setUp() {
@@ -55,34 +64,33 @@ public class PostServiceTest {
                 .category(Category.네트워크)
                 .createdAt(LocalDateTime.now())
                 .build());
+
     }
 
 
     @Test
     @DisplayName("게시글 목록 조회")
     public void getPostList(){
-        //given
-        postRepository.save(Post.builder()
+        // given
+        postService.createPost(PostCreateRequest.builder()
                 .title("제목1")
+                .questionId(question.getId())
                 .content("내용1")
-                .category(Category.네트워크)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .csQuestion(question)
-                .build());
-        postRepository.save(Post.builder()
-                .title("제목2")
-                .content("내용2")
-                .category(Category.알고리즘)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .csQuestion(question)
-                .build());
+                .category("네트워크")
+                .build(), user.getId());
 
-        //when
+        postService.createPost(PostCreateRequest.builder()
+                .title("제목2")
+                .questionId(question.getId())
+                .content("내용2")
+                .category("알고리즘")
+                .build(), user.getId());
+
+
+        // when
         List<Post> all = postRepository.findAll();
 
-        //then
+        // then
         assertThat(all).hasSize(2);
 
     }
@@ -90,110 +98,98 @@ public class PostServiceTest {
     @Test
     @DisplayName("게시글 상세 조회")
     public void getPostDetail() {
-        //given
-        Post post = postRepository.save(Post.builder()
-                .title("제목")
-                .content("내용")
-                .category(Category.네트워크)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .csQuestion(question)
-                .build());
+        // given
+        PostCreateRequest request = PostCreateRequest.builder()
+                .title("상세 조회 테스트")
+                .questionId(question.getId())
+                .content("상세 내용")
+                .category("네트워크")
+                .build();
 
-        //when
-        Optional<Post> foundPost = postRepository.findById(post.getId());
+        PostResponse.PostCreateResponse response = postService.createPost(request, user.getId());
 
-        //then
-        assertThat(foundPost).isPresent();
-        assertThat(foundPost.get().getTitle()).isEqualTo(post.getTitle());
+        // when
+        PostResponse.PostDetailResponse detail = postService.getPostDetail(response.getId());
+
+        // then
+        assertThat(detail.getTitle()).isEqualTo("상세 조회 테스트");
+        assertThat(detail.getContent()).isEqualTo("상세 내용");
+        assertThat(detail.getUserId()).isEqualTo(user.getId());
+        assertThat(detail.getQuestionId()).isEqualTo(question.getId());
 
     }
 
     @Test
     @DisplayName("게시글 저장")
-    public void createPost() {
-        //given
-        Post post = Post.builder()
-                .title("제목")
-                .content("내용")
-                .category(Category.네트워크)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .csQuestion(question)
+    void createPost() {
+        PostCreateRequest request = PostCreateRequest.builder()
+                .title("새로운 게시글")
+                .questionId(question.getId())
+                .content("내용입니다.")
+                .category("알고리즘")
                 .build();
 
-        //when
-        Post savedPost = postRepository.save(post);
+        // when
+        PostResponse.PostCreateResponse response = postService.createPost(request, user.getId());
 
-        //then
-        assertThat(savedPost.getId()).isEqualTo(post.getId());
-        assertThat(savedPost.getTitle()).isEqualTo(post.getTitle());
-        assertThat(savedPost.getContent()).isEqualTo(post.getContent());
-        assertThat(savedPost.getCategory()).isEqualTo(post.getCategory());
-        assertThat(savedPost.getCreatedAt()).isEqualTo(post.getCreatedAt());
-        assertThat(savedPost.getUser()).isEqualTo(post.getUser());
-        assertThat(savedPost.getCsQuestion()).isEqualTo(post.getCsQuestion());
-
-        assertThat(savedPost.getContent()).isEqualTo("내용");
+        // then
+        assertThat(response.getTitle()).isEqualTo("새로운 게시글");
+        assertThat(response.getContent()).isEqualTo("내용입니다.");
+        assertThat(response.getUserId()).isEqualTo(user.getId());
+        assertThat(response.getQuestionId()).isEqualTo(question.getId());
 
     }
 
     @Test
     @DisplayName("게시글 수정")
     public void updatePost() {
-        //given
-        Post post = postRepository.save(Post.builder()
-                .title("제목")
-                .content("내용")
-                .category(Category.네트워크)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .csQuestion(question)
-                .build());
+        // given
+        PostCreateRequest createRequest = PostCreateRequest.builder()
+                .title("원래 제목")
+                .questionId(question.getId())
+                .content("원래 내용")
+                .category("네트워크")
+                .build();
 
-        CSQuestion updatedQuestion = csQuestionRepository.save(CSQuestion.builder()
-                .category(Category.네트워크)
-                .content("질문")
-                .createdAt(LocalDateTime.now())
-                .build());
+        PostCreateResponse createdPost = postService.createPost(createRequest, user.getId());
 
-        //when
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정 제목")
+                .content("수정 내용")
+                .questionId(question.getId())
+                .category("기타")
+                .build();
 
-        post.updatePost(Category.기타,"수정 제목","수정 내용", updatedQuestion);
-        Post updatedPost = postRepository.save(post);
+        // when
+        PostUpdateResponse updatedPost = postService.updatePost(createdPost.getId(), updateRequest, user.getId());
 
-        //then
-        assertThat(updatedPost.getId()).isEqualTo(post.getId());
+        // then
+        assertThat(updatedPost.getId()).isEqualTo(createdPost.getId());
         assertThat(updatedPost.getTitle()).isEqualTo("수정 제목");
         assertThat(updatedPost.getContent()).isEqualTo("수정 내용");
         assertThat(updatedPost.getCategory()).isEqualTo(Category.기타);
-        assertThat(updatedPost.getCsQuestion().getId()).isEqualTo(updatedQuestion.getId());
-
-
+        assertThat(updatedPost.getQuestionId()).isEqualTo(question.getId());
     }
 
     @Test
     @DisplayName("게시글 삭제")
-    public void deletePost()
-
-    {
-        //given
-        Post post = postRepository.save(Post.builder()
-                .title("제목")
+    public void deletePost() {
+        // given
+        PostCreateRequest request = PostCreateRequest.builder()
+                .title("삭제 테스트 제목")
+                .questionId(question.getId())
                 .content("내용")
-                .category(Category.네트워크)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .csQuestion(question)
-                .build());
+                .category("기타")
+                .build();
+        PostCreateResponse response = postService.createPost(request, user.getId());
+        Long postId = response.getId();
 
-        //when
-        postRepository.delete(post);
+        // when
+        postService.deletePost(postId, user.getId());
 
-        //then
-        boolean exists = postRepository.existsById(post.getId());
+        // then
+        boolean exists = postRepository.existsById(response.getId());
         assertThat(exists).isFalse();
-
     }
 
 }
