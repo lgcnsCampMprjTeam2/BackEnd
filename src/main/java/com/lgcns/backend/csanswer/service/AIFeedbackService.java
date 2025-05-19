@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 
+import com.lgcns.backend.ai.dto.AIRequest;
+import com.lgcns.backend.ai.dto.AIResponse;
+import com.lgcns.backend.ai.dto.AIRequest.OpenAiRequest;
 import com.lgcns.backend.csanswer.domain.CSAnswer;
-import com.lgcns.backend.csanswer.dto.AIRequest;
-import com.lgcns.backend.csanswer.dto.AIRequest.OpenAiRequest;
-import com.lgcns.backend.csanswer.dto.AIResponse;
 import com.lgcns.backend.csanswer.dto.CSAnswerResponse;
 import com.lgcns.backend.csanswer.repository.CSAnswerRepository;
 import com.lgcns.backend.user.domain.User;

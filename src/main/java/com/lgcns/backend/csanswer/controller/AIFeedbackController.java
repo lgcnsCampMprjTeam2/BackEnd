@@ -23,7 +23,7 @@ public class AIFeedbackController {
     private AIFeedbackService aiFeedbackService;
     
     @PostMapping("/api/answers/{answerId}")
-    public ResponseEntity<CustomResponse<AIFeedbackResponse>> postMethodName(
+    public ResponseEntity<CustomResponse<AIFeedbackResponse>> generateAIFeedback(
             @PathVariable Long answerId,
             @AuthenticationPrincipal UserDetails userDetails) {
         
