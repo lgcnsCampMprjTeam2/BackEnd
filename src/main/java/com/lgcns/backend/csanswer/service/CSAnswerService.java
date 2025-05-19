@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.lgcns.backend.csanswer.domain.CSAnswer;
@@ -28,12 +29,14 @@ public class CSAnswerService {
     @Autowired
     private UserRepository userRepository;
 
-    public CSAnswerResponse.CSAnswerDetailResponse createAnswer(CSAnswerRequest.CSAnswerCreateRequest request) {
+    public CSAnswerResponse.CSAnswerDetailResponse createAnswer(CSAnswerRequest.CSAnswerCreateRequest request, UserDetails userDetails) {
         CSQuestion question = csQuestionRepository.findById(request.getCsquestion_id())
                 .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
 
         // 로그인 기능 구현 전으로, 하드코딩
-        User user = getCurrentUser();
+        User user1 = getCurrentUser();
+        User user = getUserFromDetails(userDetails);
+
 
         CSAnswer answer = new CSAnswer();
         answer.setContent(request.getCsanswer_content());
@@ -55,9 +58,11 @@ public class CSAnswerService {
                 .build();
     }
 
-    public List<CSAnswerResponse.CSAnswerListResponse> getAnswerList() {
+    public List<CSAnswerResponse.CSAnswerListResponse> getAnswerList(UserDetails userDetails) {
         // 로그인 기능 구현 전으로, 하드코딩
-        User user = getCurrentUser();
+        User user1 = getCurrentUser();
+        User user = getUserFromDetails(userDetails);
+        
         List<CSAnswer> answers = csAnswerRepository.findAllByUser(user);
 
         return answers.stream().map(answer -> {
@@ -74,16 +79,17 @@ public class CSAnswerService {
         }).collect(Collectors.toList());
     }
 
-    public CSAnswerResponse.CSAnswerDetailResponse getAnswerDetail(Long answerId) {
+    public CSAnswerResponse.CSAnswerDetailResponse getAnswerDetail(Long answerId, UserDetails userDetails) {
         // 로그인 기능 구현 전으로, 하드코딩
-        User user = getCurrentUser();
+        User user1 = getCurrentUser();
+        User user = getUserFromDetails(userDetails);
 
-        CSAnswer answer = csAnswerRepository.findById(answerId)
+        CSAnswer answer = csAnswerRepository.findById(answerId) //400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
         
         CSQuestion question = answer.getCsQuestion();
 
-        if (!answer.getUser().getId().equals(user.getId())) {
+        if (!answer.getUser().getId().equals(user.getId())) { //500
             throw new RuntimeException("자신의 답변만 조회할 수 있습니다.");
         }
 
@@ -98,9 +104,10 @@ public class CSAnswerService {
                 .build();
     }
 
-    public CSAnswerResponse.CSAnswerDetailResponse updateAnswer(Long answerId, CSAnswerRequest.CSAnswerUpdate request) {
+    public CSAnswerResponse.CSAnswerDetailResponse updateAnswer(Long answerId, CSAnswerRequest.CSAnswerUpdate request, UserDetails userDetails) {
         // 로그인 기능 구현 전으로, 하드코딩
-        User user = getCurrentUser();
+        User user1 = getCurrentUser();
+        User user = getUserFromDetails(userDetails);
         
         CSAnswer answer = csAnswerRepository.findById(answerId)
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
@@ -125,9 +132,10 @@ public class CSAnswerService {
                 .build();
     }
 
-    public void deleteAnswer(Long answerId) {
+    public void deleteAnswer(Long answerId, UserDetails userDetails) {
         // 로그인 기능 구현 전으로, 하드코딩
-        User user = getCurrentUser();
+        User user1 = getCurrentUser();
+        User user = getUserFromDetails(userDetails);
         CSAnswer answer = csAnswerRepository.findById(answerId)
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
 
@@ -140,6 +148,11 @@ public class CSAnswerService {
     private User getCurrentUser() {
     return userRepository.findById(1L)
         .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));
+    }
+
+    private User getUserFromDetails(UserDetails userDetails) {
+        return userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("사용자 정보를 찾을 수 없습니다."));
     }
 
 }
