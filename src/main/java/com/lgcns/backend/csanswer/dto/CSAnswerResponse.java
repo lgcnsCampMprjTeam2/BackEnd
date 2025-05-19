@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 public class CSAnswerResponse {
-    
+
     @Data
     @Builder
     public static class CSAnswerListResponse {
@@ -19,7 +19,7 @@ public class CSAnswerResponse {
         private Long csanswer_id;
         private String csanswer_content;
         private LocalDateTime csanswer_created_at;
-        
+
     }
 
     @Data
@@ -31,6 +31,13 @@ public class CSAnswerResponse {
         private Long csanswer_id;
         private String csanswer_content;
         private LocalDateTime csanswer_created_at;
+        private String csanswer_feedback;
+    }
+
+    @Data
+    @Builder
+    public static class AIFeedbackResponse {
+        private Long csanswer_id;
         private String csanswer_feedback;
     }
 }
