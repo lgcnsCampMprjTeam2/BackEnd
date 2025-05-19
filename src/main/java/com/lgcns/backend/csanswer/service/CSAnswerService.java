@@ -30,13 +30,11 @@ public class CSAnswerService {
     private UserRepository userRepository;
 
     public CSAnswerResponse.CSAnswerDetailResponse createAnswer(CSAnswerRequest.CSAnswerCreateRequest request, UserDetails userDetails) {
-        CSQuestion question = csQuestionRepository.findById(request.getCsquestion_id())
-                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
-
-        // 로그인 기능 구현 전으로, 하드코딩
-        User user1 = getCurrentUser();
+        
         User user = getUserFromDetails(userDetails);
-
+        
+        CSQuestion question = csQuestionRepository.findById(request.getCsquestion_id()) // 400
+                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
 
         CSAnswer answer = new CSAnswer();
         answer.setContent(request.getCsanswer_content());
@@ -59,8 +57,7 @@ public class CSAnswerService {
     }
 
     public List<CSAnswerResponse.CSAnswerListResponse> getAnswerList(UserDetails userDetails) {
-        // 로그인 기능 구현 전으로, 하드코딩
-        User user1 = getCurrentUser();
+
         User user = getUserFromDetails(userDetails);
         
         List<CSAnswer> answers = csAnswerRepository.findAllByUser(user);
@@ -80,16 +77,15 @@ public class CSAnswerService {
     }
 
     public CSAnswerResponse.CSAnswerDetailResponse getAnswerDetail(Long answerId, UserDetails userDetails) {
-        // 로그인 기능 구현 전으로, 하드코딩
-        User user1 = getCurrentUser();
+
         User user = getUserFromDetails(userDetails);
 
-        CSAnswer answer = csAnswerRepository.findById(answerId) //400
+        CSAnswer answer = csAnswerRepository.findById(answerId) // 400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
         
         CSQuestion question = answer.getCsQuestion();
 
-        if (!answer.getUser().getId().equals(user.getId())) { //500
+        if (!answer.getUser().getId().equals(user.getId())) { // 500
             throw new RuntimeException("자신의 답변만 조회할 수 있습니다.");
         }
 
@@ -105,14 +101,15 @@ public class CSAnswerService {
     }
 
     public CSAnswerResponse.CSAnswerDetailResponse updateAnswer(Long answerId, CSAnswerRequest.CSAnswerUpdate request, UserDetails userDetails) {
-        // 로그인 기능 구현 전으로, 하드코딩
-        User user1 = getCurrentUser();
+
         User user = getUserFromDetails(userDetails);
         
-        CSAnswer answer = csAnswerRepository.findById(answerId)
+        CSAnswer answer = csAnswerRepository.findById(answerId) // 400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
 
-        if (!answer.getUser().getId().equals(user.getId())) {
+        CSQuestion question = answer.getCsQuestion();
+
+        if (!answer.getUser().getId().equals(user.getId())) {  // 500
             throw new RuntimeException("자신의 답변만 수정할 수 있습니다.");
         }
 
@@ -120,7 +117,6 @@ public class CSAnswerService {
         answer.setFeedback("아직 피드백 없음");
         csAnswerRepository.save(answer);
 
-        CSQuestion question = answer.getCsQuestion();
         return CSAnswerResponse.CSAnswerDetailResponse.builder()
                 .csquestion_id(question.getId())
                 .csquestion_category(question.getCategory())
@@ -133,21 +129,16 @@ public class CSAnswerService {
     }
 
     public void deleteAnswer(Long answerId, UserDetails userDetails) {
-        // 로그인 기능 구현 전으로, 하드코딩
-        User user1 = getCurrentUser();
+
         User user = getUserFromDetails(userDetails);
-        CSAnswer answer = csAnswerRepository.findById(answerId)
+
+        CSAnswer answer = csAnswerRepository.findById(answerId)  // 400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
 
-        if (!answer.getUser().getId().equals(user.getId())) {
+        if (!answer.getUser().getId().equals(user.getId())) {  // 500
             throw new RuntimeException("자신의 답변만 삭제할 수 있습니다.");
         }
         csAnswerRepository.deleteById(answerId);
-    }
-
-    private User getCurrentUser() {
-    return userRepository.findById(1L)
-        .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));
     }
 
     private User getUserFromDetails(UserDetails userDetails) {
