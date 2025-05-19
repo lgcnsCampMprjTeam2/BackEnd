@@ -3,6 +3,7 @@ package com.lgcns.backend.csquestion.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,40 +24,50 @@ public class CSQuestionService {
     public Page<CSQuestionResponse> getCSQuestionList(String categoryName, Pageable pageable) {
         Page<CSQuestion> questions;
 
-        // 카테고리 없는 경우 예외 처리 필요
         if (categoryName == null) {
             questions = csQuestionRepository.findAll(pageable);
 
         } else {
-            Category category = Category.valueOf(categoryName);
-            questions = csQuestionRepository.findByCategory(category, pageable);
+            try {
+                Category category = Category.valueOf(categoryName);
+                questions = csQuestionRepository.findByCategory(category, pageable);
+            } catch (IllegalArgumentException e) {
+                questions = csQuestionRepository.findAll(pageable);
+            }
         }
 
         return questions.map(q -> new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent()));
     }
 
-    // 해당 Id의 cs질문 없는 경우 예외 처리 필요
     public CSQuestionResponse getCSQuestion(Long id) {
-        Optional<CSQuestion> opt = csQuestionRepository.findById(id);
-        if (!opt.isPresent()) {
-            
-        }
+        CSQuestion q = csQuestionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
 
-        CSQuestion q = opt.get();
         CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent());
 
         return res;
     }
 
-    public CSQuestionResponse getTodayCSQuestion(){
+    public CSQuestionResponse getTodayCSQuestion() {
         LocalDate today = LocalDate.now();
         LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
-        
+
         CSQuestion q = csQuestionRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+
+        if(q == null){
+            throw new NoSuchElementException("오늘의 질문이 아직 등록되지 않았습니다.");
+        }
 
         CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent());
 
         return res;
+    }
+
+    public void deleteQuestion(Long id) {
+        CSQuestion q = csQuestionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
+
+        csQuestionRepository.delete(q);
     }
 }
