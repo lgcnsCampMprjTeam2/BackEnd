@@ -54,8 +54,10 @@ pipeline {
                       docker rm app-\$IDLE_PORT || true
                       docker pull $DOCKER_IMAGE
 
-                      docker run -d -p \$IDLE_PORT:8080 --name app-\$IDLE_PORT $DOCKER_IMAGE \
-                        --spring.profiles.active=\$NEXT_PROFILE
+                      docker run -d -p $IDLE_PORT:8080 --name app-$IDLE_PORT \
+                        -e OPENAI_API_KEY=$OPENAI_API_KEY \
+                        $DOCKER_IMAGE --spring.profiles.active=$NEXT_PROFILE
+
 
                       for i in {1..10}; do
                         sleep 5
