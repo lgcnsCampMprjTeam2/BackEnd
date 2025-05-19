@@ -12,6 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -34,8 +37,19 @@ public class SecurityConfig {
                 // 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(
                         new JwtAuthFilter(jwtUtil, userDetailsService),
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                        UsernamePasswordAuthenticationFilter.class)
+                // cors 설정
+                .cors(cors -> cors
+                        .configurationSource(request -> {
+                            CorsConfiguration config = new CorsConfiguration();
+                            // 서버 접근을 허용할 출처 목록, "*"로 설정시, 모든 origin 가능
+                            config.setAllowedOrigins(List.of("http://localhost:3000"));
+                            config.setAllowedMethods(List.of("GET", "POST"));
+                            config.setAllowCredentials(true);
+                            config.setAllowedHeaders(List.of("*"));
+                            return config;
+                        }));
+
         return http.build();
     }
 
