@@ -1,4 +1,4 @@
-package com.lgcns.backend.csanswer.dto;
+package com.lgcns.backend.ai.dto;
 
 import java.util.List;
 import java.util.Map;
