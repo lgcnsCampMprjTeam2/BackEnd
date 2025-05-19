@@ -17,8 +17,8 @@ import com.lgcns.backend.csanswer.dto.CSAnswerResponse;
 import com.lgcns.backend.csanswer.service.CSAnswerService;
 import com.lgcns.backend.global.code.GeneralSuccessCode;
 import com.lgcns.backend.global.response.CustomResponse;
-//import org.springframework.security.core.annotation.AuthenticationPrincipal;
-//import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/answer")
@@ -30,9 +30,10 @@ public class CSAnswerController {
     // 답변 작성
     @PostMapping
     public ResponseEntity<CustomResponse<CSAnswerResponse.CSAnswerDetailResponse>> createAnswer(
-            @RequestBody CSAnswerRequest.CSAnswerCreateRequest request) {
+            @RequestBody CSAnswerRequest.CSAnswerCreateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.createAnswer(request);
+        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.createAnswer(request, userDetails);
         System.out.println("응답 데이터: " + response);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.created(response));
@@ -40,16 +41,19 @@ public class CSAnswerController {
 
     // 답변 리스트 조회
     @GetMapping
-    public ResponseEntity<CustomResponse<List<CSAnswerResponse.CSAnswerListResponse>>> readAnswerList() {
-        List<CSAnswerResponse.CSAnswerListResponse> responseList = csAnswerService.getAnswerList();
+    public ResponseEntity<CustomResponse<List<CSAnswerResponse.CSAnswerListResponse>>> readAnswerList(
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        List<CSAnswerResponse.CSAnswerListResponse> responseList = csAnswerService.getAnswerList(userDetails);
         return ResponseEntity.ok(CustomResponse.ok(responseList));
     }
 
     // 특정 답변 조회
     @GetMapping("/{answerId}")
     public ResponseEntity<CustomResponse<CSAnswerResponse.CSAnswerDetailResponse>> readAnswer(
-            @PathVariable Long answerId) {
-        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.getAnswerDetail(answerId);
+            @PathVariable Long answerId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.getAnswerDetail(answerId, userDetails);
         return ResponseEntity.ok(CustomResponse.ok(response));
     }
 
@@ -57,16 +61,17 @@ public class CSAnswerController {
     @PostMapping("/{answerId}/edit")
     public ResponseEntity<CustomResponse<CSAnswerResponse.CSAnswerDetailResponse>> updateAnswer(
             @PathVariable Long answerId,
-            @RequestBody CSAnswerRequest.CSAnswerUpdate request) {
+            @RequestBody CSAnswerRequest.CSAnswerUpdate request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.updateAnswer(answerId, request);
+        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.updateAnswer(answerId, request, userDetails);
         return ResponseEntity.ok(CustomResponse.ok(response));
     }
 
     // 답변 삭제
     @PostMapping("/{answerId}/delete")
-    public ResponseEntity<CustomResponse<Void>> deleteAnswer(@PathVariable Long answerId) {
-        csAnswerService.deleteAnswer(answerId);
+    public ResponseEntity<CustomResponse<Void>> deleteAnswer(@PathVariable Long answerId, @AuthenticationPrincipal UserDetails userDetails) {
+        csAnswerService.deleteAnswer(answerId, userDetails);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(CustomResponse.success(GeneralSuccessCode._DELETED, null));
     }
