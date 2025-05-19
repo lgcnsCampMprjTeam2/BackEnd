@@ -29,7 +29,7 @@ public class AIFeedbackService {
     private UserRepository userRepository;
 
     // openAI API로 Feedback 받기
-    @Value("${openai.api.url}")
+    @Value("https://api.openai.com/v1/chat/completions")
     String API_URL;
     @Value("${openai.api.key}")
     String API_KEY;
