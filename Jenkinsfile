@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "suhyunkim7288/CSrrr:latest"
         EC2_HOST = "ubuntu@13.125.34.183"
         SSH_CRED_ID = "ec2-key"
+        OPENAI_API_KEY = credentials('OPENAI_API_KEY')
     }
 
     stages {
