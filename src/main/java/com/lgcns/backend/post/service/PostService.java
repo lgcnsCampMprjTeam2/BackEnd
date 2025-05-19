@@ -80,8 +80,9 @@ public class PostService {
         if (!Objects.equals(post.getUser().getId(), userId)){
             throw new IllegalArgumentException("수정 권한이 없습니다");
         }
-
-        post.updatePost(Category.valueOf(request.getCategory()),request.getTitle(), request.getContent());
+        CSQuestion csQuestion = cSQuestionRepository.findById(request.getQuestionId())
+                .orElseThrow(() -> new EntityNotFoundException("질문을 찾을 수 없습니다."));
+        post.updatePost(Category.valueOf(request.getCategory()), request.getTitle(), request.getContent(), csQuestion);
         return PostUpdateResponse.from(post);
     }
 

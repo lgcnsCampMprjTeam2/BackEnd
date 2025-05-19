@@ -40,9 +40,10 @@ public class Post {
     @Column(nullable = false)
     private String content;
 
-    public void updatePost(Category category, String title, String content) {
+    public void updatePost(Category category, String title, String content, CSQuestion csQuestion) {
         this.category = category;
         this.title = title;
         this.content = content;
+        this.csQuestion = csQuestion;
     }
 }
