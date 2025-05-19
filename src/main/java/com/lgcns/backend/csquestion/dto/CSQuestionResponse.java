@@ -1,10 +1,12 @@
 package com.lgcns.backend.csquestion.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.lgcns.backend.global.domain.Category;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -15,4 +17,14 @@ public class CSQuestionResponse {
     private Category category;
     private LocalDateTime createdAt;
     private String content;
+
+
+    @Data
+    @Builder
+    public static class AIQuestionResponse {
+        private Category category;
+        private LocalDateTime createdAt;
+        private String content;
+        private String keyword;
+    }
 }

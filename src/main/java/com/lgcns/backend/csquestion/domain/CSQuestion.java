@@ -31,4 +31,7 @@ public class CSQuestion {
 
     @Column(nullable = false, unique = true)
     private String content;
+
+    @Column(unique = true)
+    private String keyword;
 }
