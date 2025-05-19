@@ -33,6 +33,7 @@ public class SecurityConfig {
                         // 회원가입, 로그인 모든 권한 인가
                         .requestMatchers("/user/signup").permitAll()
                         .requestMatchers("/user/login").permitAll()
+                        .requestMatchers("/api/questions").permitAll()
                         .anyRequest().permitAll())
                 // 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(
