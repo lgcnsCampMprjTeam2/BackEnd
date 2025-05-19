@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git 'https://github.com/lgcnsCampMprjTeam2/BackEnd.git'
+                git branch: 'main', url: 'https://github.com/lgcnsCampMprjTeam2/BackEnd.git'
             }
         }
 
