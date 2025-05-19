@@ -1,10 +1,14 @@
 package com.lgcns.backend.integration.comment.service;
 
+import com.lgcns.backend.comment.dto.CommentRequest;
+import com.lgcns.backend.comment.dto.CommentResponse;
 import com.lgcns.backend.comment.entity.Comment;
 import com.lgcns.backend.comment.respository.CommentRepository;
+import com.lgcns.backend.comment.service.CommentService;
 import com.lgcns.backend.csquestion.domain.CSQuestion;
 import com.lgcns.backend.csquestion.repository.CSQuestionRepository;
 import com.lgcns.backend.global.domain.Category;
+import com.lgcns.backend.post.dto.PostRequest;
 import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.post.respository.PostRepository;
 import com.lgcns.backend.user.domain.User;
@@ -20,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.lgcns.backend.comment.dto.CommentRequest.*;
+import static com.lgcns.backend.comment.dto.CommentResponse.*;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
@@ -29,19 +35,17 @@ public class CommentServiceTest {
 
     @Autowired
     private CommentRepository commentRepository;
-
+    @Autowired
+    private CommentService commentService;
     @Autowired
     private PostRepository postRepository;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private CSQuestionRepository csQuestionRepository;
 
     private User user;
     private Post post;
-
 
     @BeforeEach
     void setUp() {
@@ -75,19 +79,11 @@ public class CommentServiceTest {
     @DisplayName("댓글 목록 조회")
     public void getCommentList() {
         //given
-        commentRepository.save(Comment.builder()
-                .content("댓글 내용1")
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .post(post)
-                .build());
+        commentService.addComment(post.getId(), user.getId(),CommentCreateRequest.builder()
+                        .content("댓글 내용1").build());
 
-        commentRepository.save(Comment.builder()
-                .content("댓글 내용2")
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .post(post)
-                .build());
+        commentService.addComment(post.getId(), user.getId(),CommentCreateRequest.builder()
+                .content("댓글 내용2").build());
 
         //when
         List<Comment> all = commentRepository.findAll();
@@ -101,22 +97,17 @@ public class CommentServiceTest {
     @DisplayName("댓글 작성")
     public void createComment() {
         //given
-        Comment comment = Comment.builder()
-                .content("댓글 내용")
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .post(post)
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .content("새로운 댓글")
                 .build();
 
         //when
-        Comment savedComment = commentRepository.save(comment);
+        CommentCreateResponse response = commentService.addComment(post.getId(),user.getId(),request);
 
         //then
-        assertThat(savedComment.getId()).isEqualTo(comment.getId());
-        assertThat(savedComment.getContent()).isEqualTo(comment.getContent());
-        assertThat(savedComment.getCreatedAt()).isEqualTo(comment.getCreatedAt());
-        assertThat(savedComment.getUser()).isEqualTo(comment.getUser());
-        assertThat(savedComment.getPost()).isEqualTo(comment.getPost());
+        assertThat(response.getUserId()).isEqualTo(user.getId());
+        assertThat(response.getContent()).isEqualTo("새로운 댓글");
+        assertThat(response.getPostId()).isEqualTo(post.getId());
 
     }
 
@@ -124,23 +115,24 @@ public class CommentServiceTest {
     @DisplayName("댓글 수정")
     public void updateComment() {
         //given
-        Comment comment = Comment.builder()
-                .content("댓글 내용")
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .post(post)
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .content("새로운 댓글")
                 .build();
 
+        CommentCreateResponse createdComment = commentService.addComment(post.getId(),user.getId(),request);
+
+        CommentUpdateRequest updateRequest = CommentUpdateRequest.builder()
+                        .content("수정 댓글")
+                        .build();
+
         //when
-        comment.updateComment("수정 내용");
-        Comment updatedComment = commentRepository.save(comment);
+        CommentUpdateResponse updatedComment = commentService.updateComment(createdComment.getId(), user.getId(), updateRequest);
 
         //then
-        assertThat(updatedComment.getId()).isEqualTo(comment.getId());
-        assertThat(updatedComment.getContent()).isEqualTo("수정 내용");
-        assertThat(updatedComment.getCreatedAt()).isEqualTo(comment.getCreatedAt());
-        assertThat(updatedComment.getUser()).isEqualTo(comment.getUser());
-        assertThat(updatedComment.getPost()).isEqualTo(comment.getPost());
+        assertThat(updatedComment.getContent()).isEqualTo("수정 댓글");
+        assertThat(updatedComment.getPostId()).isEqualTo(post.getId());
+        assertThat(updatedComment.getUserId()).isEqualTo(user.getId());
+        assertThat(updatedComment.getId()).isEqualTo(createdComment.getId());
 
     }
 
@@ -148,18 +140,19 @@ public class CommentServiceTest {
     @DisplayName("댓글 삭제")
     public void deleteComment() {
         //given
-        Comment comment = commentRepository.save(Comment.builder()
-                .content("댓글 내용")
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .post(post)
-                .build());
+        CommentCreateRequest request = CommentCreateRequest.builder()
+                .content("새로운 댓글")
+                .build();
+
+        CommentCreateResponse response = commentService.addComment(post.getId(),user.getId(),request);
+
+        Long CommentId = response.getId();
 
         //when
-        commentRepository.delete(comment);
+        commentService.deleteComment(CommentId, user.getId());
 
         //then
-        boolean exists = commentRepository.existsById(comment.getId());
+        boolean exists = commentRepository.existsById(response.getId());
         assertThat(exists).isFalse();
 
     }

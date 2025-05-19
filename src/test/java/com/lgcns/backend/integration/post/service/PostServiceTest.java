@@ -106,10 +106,10 @@ public class PostServiceTest {
                 .category("네트워크")
                 .build();
 
-        PostResponse.PostCreateResponse response = postService.createPost(request, user.getId());
+        PostCreateResponse response = postService.createPost(request, user.getId());
 
         // when
-        PostResponse.PostDetailResponse detail = postService.getPostDetail(response.getId());
+        PostDetailResponse detail = postService.getPostDetail(response.getId());
 
         // then
         assertThat(detail.getTitle()).isEqualTo("상세 조회 테스트");
@@ -130,7 +130,7 @@ public class PostServiceTest {
                 .build();
 
         // when
-        PostResponse.PostCreateResponse response = postService.createPost(request, user.getId());
+        PostCreateResponse response = postService.createPost(request, user.getId());
 
         // then
         assertThat(response.getTitle()).isEqualTo("새로운 게시글");
