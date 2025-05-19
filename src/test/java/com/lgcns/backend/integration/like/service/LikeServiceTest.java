@@ -12,6 +12,7 @@ import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.post.respository.PostRepository;
 import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -81,18 +85,17 @@ public class LikeServiceTest {
     @DisplayName("좋아요 설정/해제")
     public void toggleLike() {
         //given
-        likeRepository.save(Like.builder()
-                .user(user)
-                .createdAt(LocalDateTime.now())
-                .comment(comment)
-                .build());
+        likeService.toggleLike(comment.getId(), user.getId());
 
         //when
-        likeRepository.findAll();
+        List<Like> likesAfterSet = likeRepository.findAll();
+        assertThat(likesAfterSet).hasSize(1);
 
+        // then
+        likeService.toggleLike(comment.getId(), user.getId());
 
-        //then
-
+        List<Like> likesAfterUnset = likeRepository.findAll();
+        assertThat(likesAfterUnset).isEmpty();
 
     }
 }
