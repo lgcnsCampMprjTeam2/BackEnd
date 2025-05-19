@@ -37,11 +37,10 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 sshagent([SSH_CRED_ID]) {
-                    sh '''
+                    sh """
                     ssh -o StrictHostKeyChecking=no $EC2_HOST '
-                      # 현재 실행 중인 포트가 deploy1인지 확인
-                      CURRENT_PROFILE=$(curl -s http://localhost/profile)
-                      if [ "$CURRENT_PROFILE" = "deploy1" ]; then
+                      CURRENT_PROFILE=\$(curl -s http://localhost/profile)
+                      if [ "\$CURRENT_PROFILE" = "deploy1" ]; then
                         IDLE_PORT=8082
                         NEXT_PROFILE=deploy2
                       else
@@ -49,35 +48,33 @@ pipeline {
                         NEXT_PROFILE=deploy1
                       fi
 
-                      echo "배포할 포트: $IDLE_PORT, 적용할 프로파일: $NEXT_PROFILE"
+                      echo "배포할 포트: \$IDLE_PORT, 적용할 프로파일: \$NEXT_PROFILE"
 
-                      docker stop app-$IDLE_PORT || true
-                      docker rm app-$IDLE_PORT || true
+                      docker stop app-\$IDLE_PORT || true
+                      docker rm app-\$IDLE_PORT || true
                       docker pull $DOCKER_IMAGE
 
-                      docker run -d -p $IDLE_PORT:8080 --name app-$IDLE_PORT $DOCKER_IMAGE \
-                        --spring.profiles.active=$NEXT_PROFILE
+                      docker run -d -p \$IDLE_PORT:8080 --name app-\$IDLE_PORT $DOCKER_IMAGE \
+                        --spring.profiles.active=\$NEXT_PROFILE
 
-                      # Health check
                       for i in {1..10}; do
                         sleep 5
-                        RESPONSE=$(curl -s http://localhost:$IDLE_PORT/profile)
-                        if [ "$RESPONSE" = "$NEXT_PROFILE" ]; then
-                          echo "✅ Health check 성공: $RESPONSE"
+                        RESPONSE=\$(curl -s http://localhost:\$IDLE_PORT/profile)
+                        if [ "\$RESPONSE" = "\$NEXT_PROFILE" ]; then
+                          echo "✅ Health check 성공: \$RESPONSE"
                           break
                         fi
-                        if [ "$i" -eq 10 ]; then
+                        if [ "\$i" -eq 10 ]; then
                           echo "❌ Health check 실패"
                           exit 1
                         fi
                       done
 
-                      ~/switch_nginx.sh $IDLE_PORT
+                      ~/switch_nginx.sh \$IDLE_PORT
                     '
-                    '''
+                    """
                 }
             }
         }
-
     }
 }
