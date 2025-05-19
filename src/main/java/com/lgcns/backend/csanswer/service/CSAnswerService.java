@@ -1,10 +1,10 @@
 package com.lgcns.backend.csanswer.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +29,12 @@ public class CSAnswerService {
     @Autowired
     private UserRepository userRepository;
 
-    public CSAnswerResponse.CSAnswerDetailResponse createAnswer(CSAnswerRequest.CSAnswerCreateRequest request, UserDetails userDetails) {
-        
+    // 답변 작성
+    public CSAnswerResponse.CSAnswerDetailResponse createAnswer(CSAnswerRequest.CSAnswerCreateRequest request,
+            UserDetails userDetails) {
+
         User user = getUserFromDetails(userDetails);
-        
+
         CSQuestion question = csQuestionRepository.findById(request.getCsquestion_id()) // 400
                 .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
 
@@ -56,13 +58,21 @@ public class CSAnswerService {
                 .build();
     }
 
-    public List<CSAnswerResponse.CSAnswerListResponse> getAnswerList(UserDetails userDetails) {
+    // 답변 리스트 조회 (페이지, 특정 질문)
+    public Page<CSAnswerResponse.CSAnswerListResponse> getAnswerList(UserDetails userDetails, Pageable pageable, Long questionId) {
 
         User user = getUserFromDetails(userDetails);
-        
-        List<CSAnswer> answers = csAnswerRepository.findAllByUser(user);
 
-        return answers.stream().map(answer -> {
+        Page<CSAnswer> answers;
+        if(questionId== null) {
+            answers = csAnswerRepository.findAllByUser(user, pageable);
+        } else {
+            CSQuestion tquestion = csQuestionRepository.findById(questionId) // 400
+                .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
+            answers = csAnswerRepository.findAllByUserAndCsQuestion(user, tquestion, pageable);
+        }
+
+        return answers.map(answer -> {
             CSQuestion question = answer.getCsQuestion();
             return CSAnswerResponse.CSAnswerListResponse.builder()
                     .user_nickname(answer.getUser().getNickname())
@@ -73,16 +83,17 @@ public class CSAnswerService {
                     .csanswer_content(answer.getContent())
                     .csanswer_created_at(answer.getCreatedAt())
                     .build();
-        }).collect(Collectors.toList());
+        });
     }
 
+    // 특정 답변 조회
     public CSAnswerResponse.CSAnswerDetailResponse getAnswerDetail(Long answerId, UserDetails userDetails) {
 
         User user = getUserFromDetails(userDetails);
 
         CSAnswer answer = csAnswerRepository.findById(answerId) // 400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
-        
+
         CSQuestion question = answer.getCsQuestion();
 
         if (!answer.getUser().getId().equals(user.getId())) { // 500
@@ -100,16 +111,18 @@ public class CSAnswerService {
                 .build();
     }
 
-    public CSAnswerResponse.CSAnswerDetailResponse updateAnswer(Long answerId, CSAnswerRequest.CSAnswerUpdate request, UserDetails userDetails) {
+    // 답변 수정
+    public CSAnswerResponse.CSAnswerDetailResponse updateAnswer(Long answerId, CSAnswerRequest.CSAnswerUpdate request,
+            UserDetails userDetails) {
 
         User user = getUserFromDetails(userDetails);
-        
+
         CSAnswer answer = csAnswerRepository.findById(answerId) // 400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
 
         CSQuestion question = answer.getCsQuestion();
 
-        if (!answer.getUser().getId().equals(user.getId())) {  // 500
+        if (!answer.getUser().getId().equals(user.getId())) { // 500
             throw new RuntimeException("자신의 답변만 수정할 수 있습니다.");
         }
 
@@ -128,14 +141,15 @@ public class CSAnswerService {
                 .build();
     }
 
+    // 답변 삭제
     public void deleteAnswer(Long answerId, UserDetails userDetails) {
 
         User user = getUserFromDetails(userDetails);
 
-        CSAnswer answer = csAnswerRepository.findById(answerId)  // 400
+        CSAnswer answer = csAnswerRepository.findById(answerId) // 400
                 .orElseThrow(() -> new IllegalArgumentException("답변이 존재하지 않습니다."));
 
-        if (!answer.getUser().getId().equals(user.getId())) {  // 500
+        if (!answer.getUser().getId().equals(user.getId())) { // 500
             throw new RuntimeException("자신의 답변만 삭제할 수 있습니다.");
         }
         csAnswerRepository.deleteById(answerId);

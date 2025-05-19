@@ -3,6 +3,11 @@ package com.lgcns.backend.csanswer.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lgcns.backend.csanswer.dto.CSAnswerRequest;
@@ -41,14 +47,20 @@ public class CSAnswerController {
 
     // 답변 리스트 조회
     @GetMapping
-    public ResponseEntity<CustomResponse<List<CSAnswerResponse.CSAnswerListResponse>>> readAnswerList(
-        @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<CustomResponse<Page<CSAnswerResponse.CSAnswerListResponse>>> readAnswerList(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(required = false) Long questionId
     ) {
-        List<CSAnswerResponse.CSAnswerListResponse> responseList = csAnswerService.getAnswerList(userDetails);
+        Order order = Order.desc("id");
+        Sort sort = Sort.by(order);
+        Pageable pageable = PageRequest.of(page-1, 10, sort);
+        
+        Page<CSAnswerResponse.CSAnswerListResponse> responseList = csAnswerService.getAnswerList(userDetails, pageable, questionId);
         return ResponseEntity.ok(CustomResponse.ok(responseList));
     }
 
-    // 특정 답변 조회
+    // 특정 답변 조회 (페이지, 특정 질문)
     @GetMapping("/{answerId}")
     public ResponseEntity<CustomResponse<CSAnswerResponse.CSAnswerDetailResponse>> readAnswer(
             @PathVariable Long answerId,
