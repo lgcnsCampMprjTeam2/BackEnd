@@ -56,7 +56,6 @@ pipeline {
 
                       docker run -d -p \$IDLE_PORT:8080 --name app-\$IDLE_PORT \
                         -e OPENAI_API_KEY=$OPENAI_API_KEY \
-                        -e OPENAI_API_URL=$OPENAI_API_URL \
                         $DOCKER_IMAGE --spring.profiles.active=\$NEXT_PROFILE
 
 
