@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "suhyunkim7288/CSrrr:latest"
+        DOCKER_IMAGE = "suhyunkim7288/csrrr:latest"
         EC2_HOST = "ubuntu@13.125.34.183"
         SSH_CRED_ID = "ec2-key"
         OPENAI_API_KEY = credentials('OPENAI_API_KEY')
@@ -23,37 +23,58 @@ pipeline {
 
         stage('Build & Push Docker Image') {
             steps {
-                sh '''
-                docker build -t $DOCKER_IMAGE .
-                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                docker push $DOCKER_IMAGE
-                '''
+                withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        docker build -t $DOCKER_IMAGE .
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push $DOCKER_IMAGE
+                    '''
+                }
             }
         }
+
 
         stage('Deploy to EC2') {
             steps {
                 sshagent([SSH_CRED_ID]) {
-                    sh '''
+                    sh """
                     ssh -o StrictHostKeyChecking=no $EC2_HOST '
-                      IDLE_PORT=$(curl -s http://localhost/profile | grep set1 >/dev/null && echo 8082 || echo 8081)
+                      CURRENT_PROFILE=\$(curl -s http://localhost/profile)
+                      if [ "\$CURRENT_PROFILE" = "deploy1" ]; then
+                        IDLE_PORT=8082
+                        NEXT_PROFILE=deploy2
+                      else
+                        IDLE_PORT=8081
+                        NEXT_PROFILE=deploy1
+                      fi
 
-                      docker stop app-$IDLE_PORT || true
-                      docker rm app-$IDLE_PORT || true
+                      echo "배포할 포트: \$IDLE_PORT, 적용할 프로파일: \$NEXT_PROFILE"
+
+                      docker stop app-\$IDLE_PORT || true
+                      docker rm app-\$IDLE_PORT || true
                       docker pull $DOCKER_IMAGE
-                      docker run -d -p $IDLE_PORT:8080 --name app-$IDLE_PORT $DOCKER_IMAGE
+
+                      docker run -d -p \$IDLE_PORT:8080 --name app-\$IDLE_PORT \
+                        -e OPENAI_API_KEY=$OPENAI_API_KEY \
+                        $DOCKER_IMAGE --spring.profiles.active=\$NEXT_PROFILE
+
 
                       for i in {1..10}; do
                         sleep 5
-                        if curl -s http://localhost:$IDLE_PORT/profile | grep deploy; then
-                          echo "Health check 성공"
+                        RESPONSE=\$(curl -s http://localhost:\$IDLE_PORT/profile)
+                        if [ "\$RESPONSE" = "\$NEXT_PROFILE" ]; then
+                          echo "✅ Health check 성공: \$RESPONSE"
                           break
+                        fi
+                        if [ "\$i" -eq 10 ]; then
+                          echo "❌ Health check 실패"
+                          exit 1
                         fi
                       done
 
-                      ~/switch_nginx.sh $IDLE_PORT
+                      ~/switch_nginx.sh \$IDLE_PORT
                     '
-                    '''
+                    """
                 }
             }
         }
