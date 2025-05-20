@@ -32,6 +32,9 @@ public class AIQuestionService {
     @Autowired
     private CSQuestionRepository csQuestionRepository;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     // openAI API로 Question 생성
     @Value("https://api.openai.com/v1/chat/completions")
     String API_URL;
@@ -57,7 +60,6 @@ public class AIQuestionService {
                 existKeywords,
                 "다시 말하지만: 반드시 새로운 질문, 하나의 키워드, 하나의 JSON 객체만 생성해. 여러 키워드나 여러 JSON은 금지.");
 
-        RestTemplate restTemplate = new RestTemplate();
         AIRequest.OpenAiRequest request = AIRequest.OpenAiRequest.builder()
                 .model("gpt-4o")
                 .temperature(0.7)
