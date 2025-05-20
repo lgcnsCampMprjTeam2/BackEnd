@@ -6,10 +6,12 @@ import com.lgcns.backend.Like.repository.LikeRepository;
 import com.lgcns.backend.comment.entity.Comment;
 import com.lgcns.backend.comment.respository.CommentRepository;
 import com.lgcns.backend.global.code.GeneralErrorCode;
+import com.lgcns.backend.global.code.PostErrorCode;
 import com.lgcns.backend.global.exception.CustomException;
 import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +27,11 @@ public class LikeService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
 
-    public LikeResponse toggleLike(Long commentId, Long userId) {
+    public LikeResponse toggleLike(Long commentId, UserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(GeneralErrorCode._NOT_FOUND));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(GeneralErrorCode._NOT_FOUND));
+        User user = getUserFromDetails(userDetails);
 
         Optional<Like> existingLike = likeRepository.findByCommentAndUser(comment, user);
 
@@ -48,6 +49,10 @@ public class LikeService {
             return LikeResponse.from(comment.getId(), true);
         }
 
+    }
+    private User getUserFromDetails(UserDetails userDetails) {
+        return userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new CustomException(PostErrorCode.UNAUTHORIZED_ACCESS));
     }
 
 }

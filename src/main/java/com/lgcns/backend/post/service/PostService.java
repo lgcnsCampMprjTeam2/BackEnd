@@ -12,6 +12,7 @@ import com.lgcns.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,11 @@ public class PostService {
         }
     }
 
+    private User getUserFromDetails(UserDetails userDetails) {
+        return userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new CustomException(PostErrorCode.UNAUTHORIZED_ACCESS));
+    }
+
     //게시글 목록 조회
     public PostListResponse getPostList(Pageable pageable) {
         Page<Post> posts = postRepository.findAll(pageable);
@@ -58,10 +64,9 @@ public class PostService {
 
     //게시글 생성
     @Transactional
-    public PostCreateResponse createPost(PostCreateRequest request, Long userId) {
+    public PostCreateResponse createPost(PostCreateRequest request, UserDetails userDetails) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(PostErrorCode.UNAUTHORIZED_ACCESS));
+        User user = getUserFromDetails(userDetails);
 
         CSQuestion csQuestion = null;
         if (request.getQuestionId() != null) {
@@ -90,10 +95,11 @@ public class PostService {
 
     //게시글 수정
     @Transactional
-    public PostUpdateResponse updatePost(Long postId, PostUpdateRequest request, Long userId){
+    public PostUpdateResponse updatePost(Long postId, PostUpdateRequest request, UserDetails userDetails){
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(PostErrorCode.POST_NOT_FOUND));
-        validateWriter(post.getUser().getId(), userId,"작성자만 수정할 수 있습니다.");
+        User user = getUserFromDetails(userDetails);
+        validateWriter(post.getUser().getId(), user.getId(), "작성자만 수정할 수 있습니다.");
         CSQuestion csQuestion = cSQuestionRepository.findById(request.getQuestionId())
                 .orElseThrow(() -> new CustomException(PostErrorCode.QUESTION_NOT_FOUND));
 
@@ -110,11 +116,12 @@ public class PostService {
 
     //게시글 삭제
     @Transactional
-    public void deletePost(Long postId, Long userId) {
+    public void deletePost(Long postId, UserDetails userDetails) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(PostErrorCode.POST_NOT_FOUND));
 
-        validateWriter(post.getUser().getId(), userId,"작성자만 삭제할 수 있습니다.");
+        User user = getUserFromDetails(userDetails);
+        validateWriter(post.getUser().getId(), user.getId(), "작성자만 삭제할 수 있습니다.");
 
         postRepository.delete(post);
     }
