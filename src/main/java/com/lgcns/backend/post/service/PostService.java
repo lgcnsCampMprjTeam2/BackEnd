@@ -62,8 +62,13 @@ public class PostService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(PostErrorCode.UNAUTHORIZED_ACCESS));
-        CSQuestion csQuestion = cSQuestionRepository.findById(request.getQuestionId())
-                .orElseThrow(() -> new CustomException(PostErrorCode.QUESTION_NOT_FOUND));
+
+        CSQuestion csQuestion = null;
+        if (request.getQuestionId() != null) {
+            csQuestion = cSQuestionRepository.findById(request.getQuestionId())
+                    .orElseThrow(() -> new CustomException(PostErrorCode.QUESTION_NOT_FOUND));
+        }
+
         Category category;
         try {
             category = Category.valueOf(request.getCategory().toUpperCase());
