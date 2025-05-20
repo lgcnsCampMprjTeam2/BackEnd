@@ -28,6 +28,8 @@ public class AIFeedbackService {
     private CSAnswerRepository csAnswerRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RestTemplate restTemplate;
 
     // openAI API로 Feedback 받기
     @Value("https://api.openai.com/v1/chat/completions")
@@ -45,7 +47,6 @@ public class AIFeedbackService {
             throw new RuntimeException("자신의 답변만 피드백 요청 가능합니다.");
         }
 
-        RestTemplate restTemplate = new RestTemplate();
         AIRequest.OpenAiRequest request = AIRequest.OpenAiRequest.builder()
                                                         .model("gpt-4o")
                                                         .temperature(0.7)
