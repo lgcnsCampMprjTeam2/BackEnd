@@ -7,6 +7,7 @@ import com.lgcns.backend.security.util.JwtUtil;
 import com.lgcns.backend.user.dto.request.LoginRequestDto;
 import com.lgcns.backend.user.dto.request.SignUpRequestDto;
 import com.lgcns.backend.user.dto.request.UpdateUserRequestDto;
+import com.lgcns.backend.user.service.S3Service;
 import com.lgcns.backend.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,10 +18,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -32,13 +36,19 @@ public class UserController {
     JwtUtil jwtUtil;
     @Autowired
     AuthenticationManager authManager;
+    @Autowired
+    S3Service s3Service;
 
     // 회원가입
     @PostMapping("/user/signup")
-    public ResponseEntity<CustomResponse<String>> signUp(@RequestBody SignUpRequestDto dto) {
+    public ResponseEntity<CustomResponse<String>> signUp(@ModelAttribute SignUpRequestDto dto) {
 
         try {
-            userService.signUp(dto);
+            MultipartFile image = dto.getImage();
+            String imageUrl = s3Service.upload(image);
+
+
+            userService.signUp(dto, imageUrl);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(CustomResponse.created("회원가입 성공"));
@@ -46,6 +56,8 @@ public class UserController {
             return ResponseEntity
                     .status(GeneralErrorCode._EMAIL_USED.getHttpStatus())
                     .body(CustomResponse.fail(GeneralErrorCode._EMAIL_USED, "이미 존재하는 이메일입니다."));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -75,7 +87,10 @@ public class UserController {
 
     @PostMapping("/user/update")
     public ResponseEntity<CustomResponse<String>> updateUser(@AuthenticationPrincipal UserDetails userDetails,
-                           @RequestBody UpdateUserRequestDto dto) {
+                           @ModelAttribute UpdateUserRequestDto dto) throws IOException {
+
+//        MultipartFile image = dto.getImage();
+//        String imageUrl = s3Service.upload(image);
 
         CustomResponse<String> response = userService.updateUser(userDetails.getUsername(), dto);
 
