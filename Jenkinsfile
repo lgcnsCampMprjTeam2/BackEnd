@@ -6,6 +6,9 @@ pipeline {
         EC2_HOST = "ubuntu@13.125.34.183"
         SSH_CRED_ID = "ec2-key"
         OPENAI_API_KEY = credentials('OPENAI_API_KEY')
+        CLOUD_AWS_SECRET_KEY = credentials('cloud_aws_credentials_secret_key')
+        CLOUD_AWS_ACCESS_KEY = credentials('cloud_aws_credentials_access_key')
+        CLOUD_AWS_S3_BUCKET = credentials('cloud_aws_s3_bucket')
     }
 
     stages {
@@ -56,6 +59,9 @@ pipeline {
 
                       docker run -d -p \$IDLE_PORT:8080 --name app-\$IDLE_PORT \
                         -e OPENAI_API_KEY=$OPENAI_API_KEY \
+                        -e CLOUD_AWS_SECRET_KEY=$CLOUD_AWS_SECRET_KEY \
+                        -e CLOUD_AWS_ACCESS_KEY=$CLOUD_AWS_ACCESS_KEY \
+                        -e CLOUD_AWS_S3_BUCKET=$CLOUD_AWS_S3_BUCKET \
                         $DOCKER_IMAGE --spring.profiles.active=\$NEXT_PROFILE
 
 
