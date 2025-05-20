@@ -1,10 +1,10 @@
 package com.lgcns.backend.unit.csanswer.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,14 +20,14 @@ import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @SpringBootTest
@@ -78,6 +78,7 @@ class CSAnswerServiceTest {
         given(userDetails.getUsername()).willReturn(user.getEmail());
     }
 
+    @DisplayName("답변 생성 - Success")
     @Test
     void createAnswer_success() {
         CSAnswerRequest.CSAnswerCreateRequest request = CSAnswerRequest.CSAnswerCreateRequest.builder()
@@ -99,25 +100,80 @@ class CSAnswerServiceTest {
         assertThat(response.getCsquestion_id()).isEqualTo(question.getId());
     }
 
+    @DisplayName("답변 생성 - 존재하지 않는 questionId일 경우 예외 발생")
     @Test
-    void getAnswerList_success() {
+    void createAnswer_fail_whenQuestionNotFound() {
+        CSAnswerRequest.CSAnswerCreateRequest request = CSAnswerRequest.CSAnswerCreateRequest.builder()
+                .csquestion_id(999L)  // 존재하지 않는 질문 ID
+                .csanswer_content("new answer")
+                .build();
+
+        given(csQuestionRepository.findById(999L)).willReturn(Optional.empty());
         given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
-        given(csAnswerRepository.findAllByUser(user)).willReturn(Arrays.asList(answer));
 
-        Pageable pageable = PageRequest.of(0, 10);
-        Long questionId = question.getId();
+        assertThatThrownBy(() -> csAnswerService.createAnswer(request, userDetails))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("질문이 존재하지 않습니다.");
+    }
 
-        Page<CSAnswerResponse.CSAnswerListResponse> responsePage =
-                csAnswerService.getAnswerList(userDetails, pageable, questionId);
+    @DisplayName("답변 리스트 조회 - questionId를 넘기지 않는 경우 (Success)")
+    @Test
+    void getAnswerList_withoutQuestionId_success() {
+        // given
+        PageRequest pageable = PageRequest.of(0, 10);
+        Page<CSAnswer> answerPage = new PageImpl<>(List.of(answer));
 
-        List<CSAnswerResponse.CSAnswerListResponse> responseList = responsePage.getContent();
+        given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+        given(csAnswerRepository.findAllByUser(user, pageable)).willReturn(answerPage);
 
-        assertThat(responseList).hasSize(1);
-        CSAnswerResponse.CSAnswerListResponse resp = responseList.get(0);
+        // when
+        Page<CSAnswerResponse.CSAnswerListResponse> responsePage = csAnswerService.getAnswerList(userDetails, pageable,
+                null);
+
+        // then
+        assertThat(responsePage.getContent()).hasSize(1);
+        CSAnswerResponse.CSAnswerListResponse resp = responsePage.getContent().get(0);
         assertThat(resp.getUser_nickname()).isEqualTo(user.getNickname());
+        assertThat(resp.getCsanswer_content()).isEqualTo(answer.getContent());
+        assertThat(resp.getCsquestion_id()).isEqualTo(question.getId());
+    }
+
+    @DisplayName("답변 리스트 조회 - questionId를 넘기는 경우 (Success)")
+    @Test
+    void getAnswerList_withQuestionId_success() {
+        // given
+        PageRequest pageable = PageRequest.of(0, 10);
+        Page<CSAnswer> answerPage = new PageImpl<>(List.of(answer));
+
+        given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+        given(csQuestionRepository.findById(question.getId())).willReturn(Optional.of(question));
+        given(csAnswerRepository.findAllByUserAndCsQuestion(user, question, pageable)).willReturn(answerPage);
+
+        // when
+        Page<CSAnswerResponse.CSAnswerListResponse> responsePage = csAnswerService.getAnswerList(userDetails, pageable,
+                question.getId());
+
+        // then
+        assertThat(responsePage.getContent()).hasSize(1);
+        CSAnswerResponse.CSAnswerListResponse resp = responsePage.getContent().get(0);
+        assertThat(resp.getCsquestion_id()).isEqualTo(question.getId());
         assertThat(resp.getCsanswer_content()).isEqualTo(answer.getContent());
     }
 
+    @DisplayName("답변 리스트 조회 - 존재하지 않는 questionId일 경우 예외 발생")
+    @Test
+    void getAnswerList_fail_whenQuestionNotFound() {
+        PageRequest pageable = PageRequest.of(0, 10);
+
+        given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+        given(csQuestionRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> csAnswerService.getAnswerList(userDetails, pageable, 999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("질문이 존재하지 않습니다.");
+    }
+
+    @DisplayName("답변 상세 조회 - Success")
     @Test
     void getAnswerDetail_success() {
         given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
@@ -129,6 +185,7 @@ class CSAnswerServiceTest {
         assertThat(response.getCsanswer_content()).isEqualTo(answer.getContent());
     }
 
+    @DisplayName("답변 상세 조회 - 자신의 답변이 아닌 경우 예외 발생")
     @Test
     void getAnswerDetail_fail_whenNotOwner() {
         User otherUser = User.builder().id(3L).email("other@example.com").nickname("other").build();
@@ -142,6 +199,18 @@ class CSAnswerServiceTest {
                 .hasMessageContaining("자신의 답변만 조회할 수 있습니다.");
     }
 
+    @DisplayName("답변 상세 조회 - 존재하지 않는 answerId일 경우 예외 발생")
+    @Test
+    void getAnswerDetail_fail_whenAnswerNotFound() {
+        given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+        given(csAnswerRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> csAnswerService.getAnswerDetail(999L, userDetails))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("답변이 존재하지 않습니다.");
+    }
+
+    @DisplayName("답변 수정 - Success")
     @Test
     void updateAnswer_success() {
         CSAnswerRequest.CSAnswerUpdate updateRequest = CSAnswerRequest.CSAnswerUpdate.builder()
@@ -152,11 +221,13 @@ class CSAnswerServiceTest {
         given(csAnswerRepository.findById(answer.getId())).willReturn(Optional.of(answer));
         given(csAnswerRepository.save(any(CSAnswer.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.updateAnswer(answer.getId(), updateRequest, userDetails);
+        CSAnswerResponse.CSAnswerDetailResponse response = csAnswerService.updateAnswer(answer.getId(), updateRequest,
+                userDetails);
 
         assertThat(response.getCsanswer_content()).isEqualTo("updated content");
     }
 
+    @DisplayName("답변 수정 - 자신의 답변이 아닌 경우 예외 발생")
     @Test
     void updateAnswer_fail_whenNotOwner() {
         User otherUser = User.builder().id(3L).email("other@example.com").nickname("other").build();
@@ -174,6 +245,22 @@ class CSAnswerServiceTest {
                 .hasMessageContaining("자신의 답변만 수정할 수 있습니다.");
     }
 
+    @DisplayName("답변 수정 - 존재하지 않는 answerId일 경우 예외 발생")
+    @Test
+    void updateAnswer_fail_whenAnswerNotFound() {
+        CSAnswerRequest.CSAnswerUpdate updateRequest = CSAnswerRequest.CSAnswerUpdate.builder()
+                .csanswer_content("updated content")
+                .build();
+
+        given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+        given(csAnswerRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> csAnswerService.updateAnswer(999L, updateRequest, userDetails))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("답변이 존재하지 않습니다.");
+    }
+
+    @DisplayName("답변 삭제 - Success")
     @Test
     void deleteAnswer_success() {
         given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
@@ -185,6 +272,7 @@ class CSAnswerServiceTest {
         then(csAnswerRepository).should().deleteById(answer.getId());
     }
 
+    @DisplayName("답변 삭제 - 자신의 답변이 아닌 경우 예외 발생")
     @Test
     void deleteAnswer_fail_whenNotOwner() {
         User otherUser = User.builder().id(3L).email("other@example.com").nickname("other").build();
@@ -196,5 +284,16 @@ class CSAnswerServiceTest {
         assertThatThrownBy(() -> csAnswerService.deleteAnswer(answer.getId(), userDetails))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("자신의 답변만 삭제할 수 있습니다.");
+    }
+
+    @DisplayName("답변 삭제 - 존재하지 않는 answerId일 경우 예외 발생")
+    @Test
+    void deleteAnswer_fail_whenAnswerNotFound() {
+        given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
+        given(csAnswerRepository.findById(999L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> csAnswerService.deleteAnswer(999L, userDetails))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("답변이 존재하지 않습니다.");
     }
 }
