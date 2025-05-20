@@ -6,6 +6,7 @@ import com.lgcns.backend.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import static com.lgcns.backend.post.dto.PostRequest.*;
@@ -39,6 +40,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<CustomResponse<?>> createPost(
             @RequestBody PostCreateRequest request
+            @AuthenticationPrincipal
             ){
         //TODO 사용자 id
         Long userId = 1L;

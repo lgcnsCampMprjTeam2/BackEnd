@@ -82,6 +82,7 @@ public class PostService {
         }
         CSQuestion csQuestion = cSQuestionRepository.findById(request.getQuestionId())
                 .orElseThrow(() -> new EntityNotFoundException("질문을 찾을 수 없습니다."));
+
         post.updatePost(Category.valueOf(request.getCategory()), request.getTitle(), request.getContent(), csQuestion);
         return PostUpdateResponse.from(post);
     }
