@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -46,33 +47,30 @@ public class PostController {
     @PostMapping
     public ResponseEntity<CustomResponse<?>> createPost(
             @RequestBody PostCreateRequest request,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal UserDetails userDetails
     ){
         CSQuestion csQuestion = Optional.ofNullable(request.getQuestionId())
                 .flatMap(cSQuestionRepository::findById)
                 .orElse(null);
 
-        Long userId = user.getId();
-        return ResponseEntity.ok(CustomResponse.ok(postService.createPost(request, userId)));
+        return ResponseEntity.ok(CustomResponse.ok(postService.createPost(request, userDetails)));
     }
 
     @PatchMapping("/{postId}")
     public ResponseEntity<CustomResponse<?>> updatePost(
             @PathVariable Long postId,
             @RequestBody PostUpdateRequest request,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal UserDetails userDetails
     ){
-        Long userId = user.getId();
-        return ResponseEntity.ok(CustomResponse.ok(postService.updatePost(postId, request, userId)));
+        return ResponseEntity.ok(CustomResponse.ok(postService.updatePost(postId, request, userDetails)));
     }
 
     @DeleteMapping("/{postId}")
     public ResponseEntity<CustomResponse<?>> deletePost(
             @PathVariable Long postId,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal UserDetails userDetails
     ){
-        Long userId = user.getId();
-        postService.deletePost(postId, userId);
+        postService.deletePost(postId, userDetails);
         return ResponseEntity.ok(CustomResponse.ok(null));
     }
 

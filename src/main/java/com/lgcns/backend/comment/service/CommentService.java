@@ -3,12 +3,14 @@ package com.lgcns.backend.comment.service;
 import com.lgcns.backend.comment.entity.Comment;
 import com.lgcns.backend.comment.respository.CommentRepository;
 import com.lgcns.backend.global.code.CommentErrorCode;
+import com.lgcns.backend.global.code.PostErrorCode;
 import com.lgcns.backend.global.exception.CustomException;
 import com.lgcns.backend.post.entity.Post;
 import com.lgcns.backend.post.respository.PostRepository;
 import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,11 @@ public class CommentService {
         }
     }
 
+    private User getUserFromDetails(UserDetails userDetails) {
+        return userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new CustomException(PostErrorCode.UNAUTHORIZED_ACCESS));
+    }
+
     //댓글 목록 조회
     public CommentListResponse getCommentList(Long postId){
         Post post = postRepository.findById(postId)
@@ -44,12 +51,11 @@ public class CommentService {
 
     //댓글 작성
     @Transactional
-    public CommentCreateResponse addComment(Long postId, Long userId, CommentCreateRequest request) {
+    public CommentCreateResponse addComment(Long postId, UserDetails userDetails, CommentCreateRequest request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(CommentErrorCode.POST_NOT_FOUND));
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(CommentErrorCode.USER_NOT_FOUND));
+        User user = getUserFromDetails(userDetails);
 
         Comment comment = Comment.builder()
                 .post(post)
@@ -65,11 +71,12 @@ public class CommentService {
 
     //댓글 수정
     @Transactional
-    public CommentUpdateResponse updateComment(Long commentId, Long userId, CommentUpdateRequest request) {
+    public CommentUpdateResponse updateComment(Long commentId, UserDetails userDetails, CommentUpdateRequest request) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        validateWriter(comment.getUser().getId(), userId, CommentErrorCode.NO_UPDATE_PERMISSION);
+        User user = getUserFromDetails(userDetails);
+        validateWriter(comment.getUser().getId(), user.getId(), CommentErrorCode.NO_UPDATE_PERMISSION);
 
         comment.updateComment(request.getContent());
         return CommentUpdateResponse.from(comment);
@@ -77,11 +84,12 @@ public class CommentService {
 
     //댓글 삭제
     @Transactional
-    public void deleteComment(Long commentId, Long userId) {
+    public void deleteComment(Long commentId, UserDetails userDetails) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(CommentErrorCode.COMMENT_NOT_FOUND));
 
-        validateWriter(comment.getUser().getId(), userId, CommentErrorCode.NO_DELETE_PERMISSION);
+        User user = getUserFromDetails(userDetails);
+        validateWriter(comment.getUser().getId(), user.getId(), CommentErrorCode.NO_DELETE_PERMISSION);
 
         commentRepository.delete(comment);
     }
