@@ -2,6 +2,7 @@ package com.lgcns.backend.csquestion.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -37,6 +38,8 @@ public class CSQuestionService {
 
     public Page<CSQuestionResponse> getCSQuestionList(String categoryName, Pageable pageable, UserDetails userDetails) {
         Page<CSQuestion> questions;
+        Set<Long> submittedQuestionsIds = new HashSet<>();
+        final User user = (userDetails != null) ? getUserFromDetails(userDetails) : null;
 
         if (categoryName == null) {
             questions = csQuestionRepository.findAll(pageable);
@@ -50,20 +53,22 @@ public class CSQuestionService {
             }
         }
 
-        // 제출 정보
-        User user = getUserFromDetails(userDetails);
-        List<CSAnswer> answers = csAnswerRepository.findAllByUser(user);
-        Set<Long> submittedQuestionsIds = answers.stream().map((a)->a.getCsQuestion().getId()).collect(Collectors.toSet());
+        if (user != null) {
+            List<CSAnswer> answers = csAnswerRepository.findAllByUser(user);
+            submittedQuestionsIds
+                    .addAll(answers.stream().map((a) -> a.getCsQuestion().getId()).collect(Collectors.toSet()));
+        }
 
-
-        return questions.map(q -> new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent(), submittedQuestionsIds.contains(q.getId())));
+        return questions.map(q -> new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent(),
+                user != null && submittedQuestionsIds.contains(q.getId())));
     }
 
     public CSQuestionResponse getCSQuestion(Long id) {
         CSQuestion q = csQuestionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
 
-        CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent(), false);
+        CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent(),
+                false);
 
         return res;
     }
@@ -79,7 +84,8 @@ public class CSQuestionService {
             throw new NoSuchElementException("오늘의 질문이 아직 등록되지 않았습니다.");
         }
 
-        CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent(), false);
+        CSQuestionResponse res = new CSQuestionResponse(q.getId(), q.getCategory(), q.getCreatedAt(), q.getContent(),
+                false);
 
         return res;
     }

@@ -7,6 +7,7 @@ import com.lgcns.backend.csquestion.service.CSQuestionService;
 import com.lgcns.backend.global.code.GeneralSuccessCode;
 import com.lgcns.backend.global.response.CustomResponse;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +33,7 @@ public class CSQuestionController {
 
     @GetMapping
     public ResponseEntity<?> getCSQuestionList(@RequestParam(required = false) String category,
-            @RequestParam(defaultValue = "1") int page, UserDetails userDetails) {
+            @RequestParam(defaultValue = "1") int page, @AuthenticationPrincipal UserDetails userDetails) {
         Order order = Order.desc("id");
         Sort sort = Sort.by(order);
         Pageable pageable = PageRequest.of(page - 1, 10, sort);
