@@ -1,5 +1,7 @@
 package com.lgcns.backend.post.controller;
 
+import com.lgcns.backend.csquestion.domain.CSQuestion;
+import com.lgcns.backend.csquestion.repository.CSQuestionRepository;
 import com.lgcns.backend.global.response.CustomResponse;
 import com.lgcns.backend.post.dto.PostRequest;
 import com.lgcns.backend.post.service.PostService;
@@ -10,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 import static com.lgcns.backend.post.dto.PostRequest.*;
 
 @RestController
@@ -18,6 +22,7 @@ import static com.lgcns.backend.post.dto.PostRequest.*;
 public class PostController {
 
     private final PostService postService;
+    private final CSQuestionRepository cSQuestionRepository;
 
     @GetMapping
     public ResponseEntity<CustomResponse<?>> getPostList(
@@ -43,6 +48,10 @@ public class PostController {
             @RequestBody PostCreateRequest request,
             @AuthenticationPrincipal User user
     ){
+        CSQuestion csQuestion = Optional.ofNullable(request.getQuestionId())
+                .flatMap(cSQuestionRepository::findById)
+                .orElse(null);
+
         Long userId = user.getId();
         return ResponseEntity.ok(CustomResponse.ok(postService.createPost(request, userId)));
     }
