@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/signup").permitAll()
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/api/questions").permitAll()
+                        .requestMatchers("/profile").permitAll()
                         .anyRequest().permitAll())
                 // 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(

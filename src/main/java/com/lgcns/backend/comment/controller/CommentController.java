@@ -2,8 +2,11 @@ package com.lgcns.backend.comment.controller;
 
 import com.lgcns.backend.comment.service.CommentService;
 import com.lgcns.backend.global.response.CustomResponse;
+import com.lgcns.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static com.lgcns.backend.comment.dto.CommentRequest.*;
@@ -23,33 +26,28 @@ public class CommentController {
     @PostMapping("/{postId}/comments")
     public ResponseEntity<CustomResponse<?>> addComment(
             @PathVariable Long postId,
-            @RequestBody CommentCreateRequest request){
+            @RequestBody CommentCreateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        //TODO 사용자 id
-        Long userId = 1L;
-        return ResponseEntity.ok(CustomResponse.ok(commentService.addComment(postId, userId, request)));
+        return ResponseEntity.ok(CustomResponse.ok(commentService.addComment(postId, userDetails, request)));
     }
 
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<CustomResponse<?>> updateComment(
             @PathVariable Long commentId,
-            @RequestBody CommentUpdateRequest request){
+            @RequestBody CommentUpdateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails){
 
-        //TODO 사용자 id
-        Long userId = 1L;
-
-        return ResponseEntity.ok(CustomResponse.ok(commentService.updateComment(commentId, userId, request)));
+        return ResponseEntity.ok(CustomResponse.ok(commentService.updateComment(commentId, userDetails, request)));
 
     }
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<CustomResponse<?>> deleteComment(
-            @PathVariable Long commentId){
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal UserDetails userDetails){
 
-        //TODO 사용자 id
-        Long userId = 1L;
-
-        commentService.deleteComment(commentId, userId);
+        commentService.deleteComment(commentId, userDetails);
         return ResponseEntity.ok(CustomResponse.ok(null));
 
     }

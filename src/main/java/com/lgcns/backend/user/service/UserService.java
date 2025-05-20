@@ -18,7 +18,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -33,9 +37,11 @@ public class UserService {
     JwtUtil jwtUtil;
     @Autowired
     AuthenticationManager authManager;
+    @Autowired
+    private S3Service s3Service;
 
     // 회원가입 기능
-    public void signUp(SignUpRequestDto dto) {
+    public void signUp(SignUpRequestDto dto, String imageurl) {
         Optional<User> user = userRepository.findByEmail(dto.getEmail());
 
         if (user.isPresent()) {
@@ -49,7 +55,7 @@ public class UserService {
         newUser.setPassword(encodedPassword);
         newUser.setName(dto.getName());
         newUser.setNickname(dto.getNickname());
-        newUser.setProfileImage(dto.getProfileImage());
+        newUser.setProfileImage(imageurl);
         // userRole을 User로 지정
         newUser.setRole("ROLE_USER");
 
@@ -87,14 +93,21 @@ public class UserService {
             // 인증 성공시 JWT 발행
             String token = jwtUtil.createAccessToken(authentication.getName());
             System.out.println("✅ 인증 성공: " + authentication.getName());
-            return CustomResponse.success(GeneralSuccessCode._OK, token);
+
+            User user = userRepository.findByEmail(dto.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
+
+            String profileImgUrl = user.getProfileImage();
+            Map<String, String> map = new HashMap<>();
+            map.put("token", token);
+            map.put("profileImgUrl", profileImgUrl);
+
+            return CustomResponse.success(GeneralSuccessCode._OK, map);
 
         } catch (AuthenticationException e) {
             System.out.println("❌ 인증 실패: " + e.getMessage());
             return CustomResponse.fail(GeneralErrorCode._UNAUTHORIZED, "로그인 실패: 잘못된 이메일 또는 비밀번호");
-
         }
-
     }
 
     // 회원 탈퇴 기능
@@ -106,7 +119,7 @@ public class UserService {
     }
 
     // 회원 정보 변경 기능
-    public CustomResponse updateUser(String email, UpdateUserRequestDto dto) {
+    public CustomResponse updateUser(String email, UpdateUserRequestDto dto) throws IOException {
         // 사용자 존재여부 판단 - 굳이 필요 없긴하다
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
@@ -143,12 +156,13 @@ public class UserService {
             // 변경 진행
             user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         } else {
-            return CustomResponse.fail(GeneralErrorCode._BAD_REQUEST, "모든 정보를 입력해주세요.");
+            return CustomResponse.fail(GeneralErrorCode._BAD_REQUEST, "모든 정보를 입력해주세요222.");
         }
 
         // 프로필 이미지
-        if (dto.getProfileImage() != null) {
-            user.setProfileImage(dto.getProfileImage());
+        if (dto.getNewProfileimage() != null) {
+            String imageUrl = s3Service.upload(dto.getNewProfileimage());
+            user.setProfileImage(imageUrl);
         }
 
         userRepository.save(user);

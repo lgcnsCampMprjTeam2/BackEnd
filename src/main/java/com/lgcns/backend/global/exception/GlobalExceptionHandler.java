@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -38,4 +40,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(CustomResponse.fail(GeneralErrorCode._INTERNAL_SERVER_ERROR, null));
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<CustomResponse<?>> handleAccessDeniedException(AccessDeniedException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(CustomResponse.fail(GeneralErrorCode._FORBIDDEN, e.getMessage()));
+    }
+
 }
