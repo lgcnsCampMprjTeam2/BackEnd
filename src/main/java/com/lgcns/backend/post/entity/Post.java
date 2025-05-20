@@ -46,4 +46,10 @@ public class Post {
         this.content = content;
         this.csQuestion = csQuestion;
     }
+
+    //자동 주입
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }
