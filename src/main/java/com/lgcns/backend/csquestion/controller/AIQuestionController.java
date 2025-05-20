@@ -25,5 +25,4 @@ public class AIQuestionController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(CustomResponse.created(response)); 
     }
-    
 }
