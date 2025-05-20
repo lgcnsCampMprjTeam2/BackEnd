@@ -20,10 +20,14 @@ import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @SpringBootTest
@@ -100,7 +104,13 @@ class CSAnswerServiceTest {
         given(userRepository.findByEmail(user.getEmail())).willReturn(Optional.of(user));
         given(csAnswerRepository.findAllByUser(user)).willReturn(Arrays.asList(answer));
 
-        List<CSAnswerResponse.CSAnswerListResponse> responseList = csAnswerService.getAnswerList(userDetails);
+        Pageable pageable = PageRequest.of(0, 10);
+        Long questionId = question.getId();
+
+        Page<CSAnswerResponse.CSAnswerListResponse> responsePage =
+                csAnswerService.getAnswerList(userDetails, pageable, questionId);
+
+        List<CSAnswerResponse.CSAnswerListResponse> responseList = responsePage.getContent();
 
         assertThat(responseList).hasSize(1);
         CSAnswerResponse.CSAnswerListResponse resp = responseList.get(0);
