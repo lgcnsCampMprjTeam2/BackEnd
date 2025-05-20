@@ -2,8 +2,10 @@ package com.lgcns.backend.comment.controller;
 
 import com.lgcns.backend.comment.service.CommentService;
 import com.lgcns.backend.global.response.CustomResponse;
+import com.lgcns.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import static com.lgcns.backend.comment.dto.CommentRequest.*;
@@ -23,20 +25,20 @@ public class CommentController {
     @PostMapping("/{postId}/comments")
     public ResponseEntity<CustomResponse<?>> addComment(
             @PathVariable Long postId,
-            @RequestBody CommentCreateRequest request){
+            @RequestBody CommentCreateRequest request,
+            @AuthenticationPrincipal User user) {
 
-        //TODO 사용자 id
-        Long userId = 1L;
+        Long userId = user.getId();
         return ResponseEntity.ok(CustomResponse.ok(commentService.addComment(postId, userId, request)));
     }
 
     @PatchMapping("/comments/{commentId}")
     public ResponseEntity<CustomResponse<?>> updateComment(
             @PathVariable Long commentId,
-            @RequestBody CommentUpdateRequest request){
+            @RequestBody CommentUpdateRequest request,
+            @AuthenticationPrincipal User user){
 
-        //TODO 사용자 id
-        Long userId = 1L;
+        Long userId = user.getId();
 
         return ResponseEntity.ok(CustomResponse.ok(commentService.updateComment(commentId, userId, request)));
 
@@ -44,10 +46,10 @@ public class CommentController {
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<CustomResponse<?>> deleteComment(
-            @PathVariable Long commentId){
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal User user){
 
-        //TODO 사용자 id
-        Long userId = 1L;
+        Long userId = user.getId();
 
         commentService.deleteComment(commentId, userId);
         return ResponseEntity.ok(CustomResponse.ok(null));
