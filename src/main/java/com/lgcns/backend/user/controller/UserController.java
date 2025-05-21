@@ -10,6 +10,7 @@ import com.lgcns.backend.user.dto.request.UpdateUserRequestDto;
 import com.lgcns.backend.user.service.S3Service;
 import com.lgcns.backend.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,6 +39,8 @@ public class UserController {
     AuthenticationManager authManager;
     @Autowired
     S3Service s3Service;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     // 회원가입
     @PostMapping("/user/signup")
@@ -78,7 +81,8 @@ public class UserController {
     @PostMapping("/user/delete")
     public ResponseEntity<CustomResponse<String>> deleteUser(@AuthenticationPrincipal UserDetails userDetails) {
 
-        userService.deleteUser(userDetails.getUsername()); // 이메일 기반
+        userService.deleteUser(userDetails.getUsername()); // DB의 회원정보 삭제
+        redisTemplate.delete(userDetails.getUsername()); // redis의 refreshToken 삭제
 
         return ResponseEntity
                 .status(GeneralSuccessCode._OK.getHttpStatus())
@@ -104,4 +108,12 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/user/logout")
+    public ResponseEntity<CustomResponse<String>> logout(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername(); // 사용자 이메일 토큰으로 추출
+        redisTemplate.delete(username);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(CustomResponse.ok("로그아웃 완료"));
+    }
 }

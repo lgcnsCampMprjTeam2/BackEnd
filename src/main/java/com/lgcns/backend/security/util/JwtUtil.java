@@ -16,6 +16,7 @@ public class JwtUtil {
     // (40개 == 30바이트, 43자 == 32.25바이트, 44자 == 33바이트)
     private final String SECRET = "1234567890123456789012345678901234567890123";
     private final long EXPIRATION = 1000 * 60 * 60; // 1시간
+//    private final long EXPIRATION = 1000; // 1초, 실험용 코드
     private final long REFRESH_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7; // 7일
 
     private Key getSigningKey() {
@@ -31,11 +32,13 @@ public class JwtUtil {
                 .compact();
     }
 
-//    public String createRefreshToken(String username) {
-//        return Jwts.builder()
-//                .setSubject(email)
-//                .setI
-//    }
+    public String createRefreshToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME)) // 보통 1주일~2주
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
 
     public String extractEmailFromToken(String token) { // 정보 추출
         return Jwts.parserBuilder()
@@ -44,14 +47,20 @@ public class JwtUtil {
                 .getBody().getSubject();
     }
 
-    public boolean validateToken(String token) { // 토큰 유효성 검사
-        try {
-            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
-            return true;
-        } catch (JwtException e) {
-            return false;
-        }
+//    public boolean validateToken(String token) { // 토큰 유효성 검사
+//        try {
+//            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
+//            return true;
+//        } catch (JwtException e) {
+//            return false;
+//        }
+//    }
+
+    public boolean validateToken(String token) {
+        Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token);
+        return true;
     }
-
-
 }

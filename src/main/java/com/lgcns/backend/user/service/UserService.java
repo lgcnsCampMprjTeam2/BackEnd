@@ -10,7 +10,9 @@ import com.lgcns.backend.user.dto.request.LoginRequestDto;
 import com.lgcns.backend.user.dto.request.SignUpRequestDto;
 import com.lgcns.backend.user.dto.request.UpdateUserRequestDto;
 import com.lgcns.backend.user.repository.UserRepository;
+import com.lgcns.backend.user.config.RedisConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.lgcns.backend.csanswer.repository.CSAnswerRepository;
 
 
+
 import java.io.IOException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +45,8 @@ public class UserService {
     AuthenticationManager authManager;
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private CSAnswerRepository csAnswerRepository;
 
@@ -70,24 +76,6 @@ public class UserService {
 
     // 로그인 기능
     public CustomResponse login(LoginRequestDto dto) {
-        // 1. 일일히 DB와 대조하는 방식
-//        Optional<User> user = userRepository.findByEmail(dto.getEmail());
-//
-//        if (user.isEmpty()) {
-//            return CustomResponse
-//                    .fail(GeneralErrorCode._NOT_FOUND,
-//                            "회원 정보가 존재하지 않습니다.");
-//        }
-//
-//        User currentUser = user.get();
-//        if (!passwordEncoder.matches(dto.getPassword(), currentUser.getPassword())) {
-//            return CustomResponse
-//                    .fail(GeneralErrorCode._UNAUTHORIZED,
-//                            "비밀번호가 일치하지 않습니다.");
-//        }
-//
-//        // JWT 발급
-//        return CustomResponse.success();
         try {
             // 이메일을 username으로 취급함
             Authentication authentication = authManager.authenticate(
@@ -95,15 +83,25 @@ public class UserService {
                             dto.getEmail(), dto.getPassword()));
 
             // 인증 성공시 JWT 발행
-            String token = jwtUtil.createAccessToken(authentication.getName());
+            String accessToken = jwtUtil.createAccessToken(authentication.getName());
+            String refreshToken = jwtUtil.createRefreshToken(authentication.getName()); // 리프레시 토큰 발급 추가
             System.out.println("✅ 인증 성공: " + authentication.getName());
+
+            // RefreshToken을 Redis에 저장
+            redisTemplate.opsForValue().set(
+                    "RT:" + authentication.getName(),   // 이메일을 Key로 사용
+                    refreshToken,
+                    Duration.ofDays(7)                  // 7일간 유효
+            );
 
             User user = userRepository.findByEmail(dto.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException("사용자 없음"));
 
             String profileImgUrl = user.getProfileImage();
             Map<String, String> map = new HashMap<>();
-            map.put("token", token);
+
+            map.put("accesstoken", accessToken);
+            map.put("refreshtoken", refreshToken);
             map.put("email", user.getEmail());
             map.put("name", user.getName());
             map.put("nickname", user.getNickname());
@@ -121,7 +119,7 @@ public class UserService {
     public void deleteUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
-        
+
         csAnswerRepository.deleteByUser(user);
         userRepository.delete(user);
     }

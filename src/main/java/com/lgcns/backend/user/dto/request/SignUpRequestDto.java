@@ -15,5 +15,4 @@ public class SignUpRequestDto {
     String role;
     
     MultipartFile image; // 회원이 업로드한 이미지
-    
 }
