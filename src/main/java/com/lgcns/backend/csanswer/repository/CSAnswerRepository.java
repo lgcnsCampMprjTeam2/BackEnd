@@ -14,4 +14,5 @@ public interface CSAnswerRepository extends JpaRepository<CSAnswer, Long>{
     List<CSAnswer> findAllByUser(User user);
     Page<CSAnswer> findAllByUser(User user, Pageable pageable);
     Page<CSAnswer> findAllByUserAndCsQuestion(User user, CSQuestion csQuestion, Pageable pageable);
+    void deleteByUser(User user);
 }
