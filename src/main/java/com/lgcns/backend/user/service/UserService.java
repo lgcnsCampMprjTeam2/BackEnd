@@ -20,6 +20,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import com.lgcns.backend.csanswer.repository.CSAnswerRepository;
+
 
 
 import java.io.IOException;
@@ -44,6 +47,8 @@ public class UserService {
     private S3Service s3Service;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private CSAnswerRepository csAnswerRepository;
 
     // 회원가입 기능
     public void signUp(SignUpRequestDto dto, String imageurl) {
@@ -114,7 +119,8 @@ public class UserService {
     public void deleteUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
-        
+
+        csAnswerRepository.deleteByUser(user);
         userRepository.delete(user);
     }
 
