@@ -5,10 +5,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -75,10 +73,10 @@ public class CSQuestionService {
 
     public CSQuestionResponse getTodayCSQuestion() {
         LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        LocalDateTime startOfDay = today.plusDays(1).atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(2).atStartOfDay();
 
-        CSQuestion q = csQuestionRepository.findByCreatedAtBetween(startOfDay, endOfDay);
+        CSQuestion q = csQuestionRepository.findFirstByCreatedAtBetweenOrderByCreatedAtDesc(startOfDay, endOfDay);
 
         if (q == null) {
             throw new NoSuchElementException("오늘의 질문이 아직 등록되지 않았습니다.");
