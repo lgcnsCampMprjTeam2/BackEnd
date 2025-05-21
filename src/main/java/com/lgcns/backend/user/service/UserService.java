@@ -39,6 +39,8 @@ public class UserService {
     AuthenticationManager authManager;
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private CSAnswerRepository csAnswerRepository;
 
     // 회원가입 기능
     public void signUp(SignUpRequestDto dto, String imageurl) {
@@ -117,7 +119,8 @@ public class UserService {
     public void deleteUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
-
+        
+        csAnswerRepository.deleteByUser(user);
         userRepository.delete(user);
     }
 
