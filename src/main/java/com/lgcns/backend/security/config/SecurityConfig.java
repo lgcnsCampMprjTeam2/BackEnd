@@ -45,8 +45,8 @@ public class SecurityConfig {
                         .configurationSource(request -> {
                             CorsConfiguration config = new CorsConfiguration();
                             // 서버 접근을 허용할 출처 목록, "*"로 설정시, 모든 origin 가능
-                            config.setAllowedOrigins(List.of("http://localhost:3000"));
-                            config.setAllowedMethods(List.of("GET", "POST"));
+                            config.setAllowedOrigins(List.of("*"));
+                            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
                             config.setAllowCredentials(true);
                             config.setAllowedHeaders(List.of("*"));
                             return config;
