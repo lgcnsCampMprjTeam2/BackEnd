@@ -2,6 +2,7 @@ package com.lgcns.backend.security.config;
 
 import com.lgcns.backend.security.filter.JwtAuthFilter;
 import com.lgcns.backend.security.util.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,8 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/api/questions").permitAll()
                         .requestMatchers("/profile").permitAll()
-                        .anyRequest().permitAll())
-                // 커스텀 사용자 인증 필터 등록
+                        .anyRequest().authenticated())
+                // JWT 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(
                         new JwtAuthFilter(jwtUtil, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class)
@@ -51,6 +52,12 @@ public class SecurityConfig {
                             config.setAllowedHeaders(List.of("*"));
                             return config;
                         }));
+//                .exceptionHandling(ex -> ex
+//                        .authenticationEntryPoint((request, response, authException) -> {
+//                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//                            response.setContentType("application/json; charset=UTF-8");
+//                            response.getWriter().write("{\"error\": \"Unauthorized\"}");
+//                        }));
 
         return http.build();
     }

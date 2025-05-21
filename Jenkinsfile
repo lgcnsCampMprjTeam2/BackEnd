@@ -9,6 +9,8 @@ pipeline {
         CLOUD_AWS_CREDENTIALS_SECRET_KEY = credentials('CLOUD_AWS_CREDENTIALS_SECRET_KEY')
         CLOUD_AWS_CREDENTIALS_ACCESS_KEY = credentials('CLOUD_AWS_CREDENTIALS_ACCESS_KEY')
         CLOUD_AWS_S3_BUCKET = credentials('CLOUD_AWS_S3_BUCKET')
+        SPRING_DATA_REDIS_HOST = credentials('SPRING_DATA_REDIS_HOST')
+        SPRING_DATA_REDIS_PORT = credentials('SPRING_DATA_REDIS_PORT')
     }
 
     stages {
@@ -62,6 +64,8 @@ pipeline {
                         -e CLOUD_AWS_CREDENTIALS_SECRET_KEY=$CLOUD_AWS_CREDENTIALS_SECRET_KEY \
                         -e CLOUD_AWS_CREDENTIALS_ACCESS_KEY=$CLOUD_AWS_CREDENTIALS_ACCESS_KEY \
                         -e CLOUD_AWS_S3_BUCKET=$CLOUD_AWS_S3_BUCKET \
+                        -e SPRING_DATA_REDIS_HOST=$SPRING_DATA_REDIS_HOST \
+                        -e SPRING_DATA_REDIS_PORT=$SPRING_DATA_REDIS_PORT \
                         $DOCKER_IMAGE --spring.profiles.active=\$NEXT_PROFILE
 
 
