@@ -73,8 +73,8 @@ public class CSQuestionService {
 
     public CSQuestionResponse getTodayCSQuestion() {
         LocalDate today = LocalDate.now();
-        LocalDateTime startOfDay = today.plusDays(1).atStartOfDay();
-        LocalDateTime endOfDay = today.plusDays(2).atStartOfDay();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
 
         CSQuestion q = csQuestionRepository.findFirstByCreatedAtBetweenOrderByCreatedAtDesc(startOfDay, endOfDay);
 
