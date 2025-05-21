@@ -100,6 +100,9 @@ public class UserService {
             String profileImgUrl = user.getProfileImage();
             Map<String, String> map = new HashMap<>();
             map.put("token", token);
+            map.put("email", user.getEmail());
+            map.put("name", user.getName());
+            map.put("nickname", user.getNickname());
             map.put("profileImgUrl", profileImgUrl);
 
             return CustomResponse.success(GeneralSuccessCode._OK, map);
