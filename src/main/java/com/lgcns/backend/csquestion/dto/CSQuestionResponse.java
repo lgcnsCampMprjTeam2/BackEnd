@@ -8,8 +8,10 @@ import com.lgcns.backend.global.domain.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class CSQuestionResponse {
 
@@ -17,6 +19,7 @@ public class CSQuestionResponse {
     private Category category;
     private LocalDateTime createdAt;
     private String content;
+    private boolean isSubmitted;
 
 
     @Data
