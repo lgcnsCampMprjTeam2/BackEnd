@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CustomResponse<?>> handleCustomException(CustomException e) {
         return ResponseEntity
                 .status(e.getHttpStatus())
-                .body(CustomResponse.fail(e.getErrorCode(), null));
+                .body(CustomResponse.fail(e.getErrorCode(), e.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
