@@ -3,7 +3,6 @@ package com.lgcns.backend.post.controller;
 import com.lgcns.backend.csquestion.domain.CSQuestion;
 import com.lgcns.backend.csquestion.repository.CSQuestionRepository;
 import com.lgcns.backend.global.response.CustomResponse;
-import com.lgcns.backend.post.dto.PostRequest;
 import com.lgcns.backend.post.service.PostService;
 import com.lgcns.backend.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 import static com.lgcns.backend.post.dto.PostRequest.*;
+import static com.lgcns.backend.post.dto.PostResponse.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class PostController {
     private final CSQuestionRepository cSQuestionRepository;
 
     @GetMapping
-    public ResponseEntity<CustomResponse<?>> getPostList(
+    public ResponseEntity<CustomResponse<PostListResponse>> getPostList(
             @RequestParam(required = false) String category,
             Pageable pageable
     ){

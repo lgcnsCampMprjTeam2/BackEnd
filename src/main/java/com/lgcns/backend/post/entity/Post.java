@@ -1,5 +1,6 @@
 package com.lgcns.backend.post.entity;
 
+import com.lgcns.backend.comment.entity.Comment;
 import com.lgcns.backend.csquestion.domain.CSQuestion;
 import com.lgcns.backend.global.domain.Category;
 import com.lgcns.backend.user.domain.User;
@@ -7,6 +8,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -39,6 +42,13 @@ public class Post {
 
     @Column(nullable = false)
     private String content;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    public List<Comment> getComments() {
+        return comments;
+    }
 
     public void updatePost(Category category, String title, String content, CSQuestion csQuestion) {
         this.category = category;
