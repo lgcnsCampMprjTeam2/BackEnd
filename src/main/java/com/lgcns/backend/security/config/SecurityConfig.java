@@ -55,7 +55,7 @@ public class SecurityConfig {
                             CorsConfiguration config = new CorsConfiguration();
                             // 서버 접근을 허용할 출처 목록, "*"로 설정시, 모든 origin 가능
                             config.setAllowedOrigins(List.of("http://124.111.48.143:5173", "http://localhost:5173"));
-                            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+                            config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH","DELETE"));
                             config.setAllowCredentials(true);
                             config.setAllowedHeaders(List.of("*"));
                             return config;
