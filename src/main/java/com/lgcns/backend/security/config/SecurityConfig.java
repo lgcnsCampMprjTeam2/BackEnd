@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/api/questions").permitAll()
                         .requestMatchers("/profile").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 // JWT 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(
                         new JwtAuthFilter(jwtUtil, userDetailsService),
