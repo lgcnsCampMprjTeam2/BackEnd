@@ -36,6 +36,11 @@ public class SecurityConfig {
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/api/questions").permitAll()
                         .requestMatchers("/profile").permitAll()
+
+                        //게시글,댓글 관련 권한 인가
+                        .requestMatchers("/comm/**").permitAll()
+                        .requestMatchers("/comm/*/comments").permitAll()
+
                         .anyRequest().permitAll())
                 // JWT 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(
