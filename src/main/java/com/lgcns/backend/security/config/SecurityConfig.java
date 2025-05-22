@@ -36,6 +36,8 @@ public class SecurityConfig {
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/api/questions").permitAll()
                         .requestMatchers("/profile").permitAll()
+                        .requestMatchers("/questions/**").permitAll()
+
 
                         // 게시글,댓글 관련 GET 요청만 허용
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/comm").permitAll()
