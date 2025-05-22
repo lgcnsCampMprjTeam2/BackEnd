@@ -55,19 +55,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
     
         } catch (ExpiredJwtException e) {
-            GeneralErrorCode error = GeneralErrorCode._TOKEN_EXPIRED;
-            response.setStatus(error.getHttpStatus().value());
-            response.setContentType("application/json; charset=UTF-8");
-            response.getWriter().write(String.format(
-                    "{\"isSuccess\": false, \"code\": \"%s\", \"message\": \"%s\", \"result\": null}",
-                    error.getCode(), error.getMessage()));
-            return;
-    
+            // 토큰 만료 로그만 남기고 통과
+            logger.warn("Expired JWT: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+        
         } catch (JwtException | IllegalArgumentException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json; charset=UTF-8");
-            response.getWriter().write("{\"error\": \"Invalid token\"}");
-            return;
+            // 잘못된 토큰도 마찬가지로 처리
+            logger.warn("Invalid JWT: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
     
         filterChain.doFilter(request, response);
