@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(csrf -> {
                     csrf.disable();
                 })
-                // 경로멸 인가
+                // 경로별 인가
                 .authorizeHttpRequests(auth -> auth
                         // 회원가입, 로그인 모든 권한 인가
                         .requestMatchers("/user/signup").permitAll()
@@ -37,11 +37,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/questions").permitAll()
                         .requestMatchers("/profile").permitAll()
 
-                        //게시글,댓글 관련 권한 인가
-                        .requestMatchers("/comm/**").permitAll()
-                        .requestMatchers("/comm/*/comments").permitAll()
+                        // 게시글,댓글 관련 GET 요청만 허용
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/comm").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/comm/{postId}").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/comm/{postId}/comments").permitAll()
 
-                        .anyRequest().permitAll())
+                        .anyRequest().authenticated())
                 // JWT 커스텀 사용자 인증 필터 등록
                 .addFilterBefore(
                         new JwtAuthFilter(jwtUtil, userDetailsService),
