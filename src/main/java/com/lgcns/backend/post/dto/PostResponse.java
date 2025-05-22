@@ -84,12 +84,20 @@ public class PostResponse {
             @JsonProperty("created_at")
             private LocalDateTime createdAt;
 
+            @JsonProperty("username")
+            private String username;
+
+            @JsonProperty("comment_count")
+            private int commentCount;
+
             public static PostSummary fromEntity(Post post) {
                 return PostSummary.builder()
                         .id(post.getId())
                         .title(post.getTitle())
                         .category(post.getCategory())
                         .createdAt(post.getCreatedAt())
+                        .username(post.getUser().getNickname())
+                        .commentCount(post.getComments().size())
                         .build();
             }
         }
@@ -109,8 +117,8 @@ public class PostResponse {
     @Builder
     public static class PostDetailResponse {
 
-        @JsonProperty("user_id")
-        private Long userId;
+        @JsonProperty("username")
+        private String username;
 
         @JsonProperty("question_id")
         private Long questionId;
@@ -124,7 +132,7 @@ public class PostResponse {
 
         public static PostDetailResponse from(Post post) {
             return PostDetailResponse.builder()
-                    .userId(post.getUser().getId())
+                    .username(post.getUser().getNickname())
                     .questionId(post.getCsQuestion().getId())
                     .content(post.getContent())
                     .title(post.getTitle())
