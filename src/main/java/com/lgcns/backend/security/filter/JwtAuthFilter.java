@@ -31,41 +31,45 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
-    
+
         // ✅ 토큰이 아예 없으면 그냥 통과 (여기 없으면 문제 생김)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
-    
+
         try {
             String token = authHeader.substring(7);
-    
+
             if (jwtUtil.validateToken(token)) {
                 String userEmail = jwtUtil.extractEmailFromToken(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-    
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
-    
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
                 throw new JwtException("Invalid token");
             }
-    
+
         } catch (ExpiredJwtException e) {
-            // 토큰 만료 로그만 남기고 통과
-            logger.warn("Expired JWT: {}", e.getMessage());
-            SecurityContextHolder.clearContext();
-        
+            GeneralErrorCode error = GeneralErrorCode._TOKEN_EXPIRED;
+            response.setStatus(error.getHttpStatus().value());
+            response.setContentType("application/json; charset=UTF-8");
+            response.getWriter().write(String.format(
+                    "{\"isSuccess\": false, \"code\": \"%s\", \"message\": \"%s\", \"result\": null}",
+                    error.getCode(), error.getMessage()));
+            return;
+
         } catch (JwtException | IllegalArgumentException e) {
-            // 잘못된 토큰도 마찬가지로 처리
-            logger.warn("Invalid JWT: {}", e.getMessage());
-            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json; charset=UTF-8");
+            response.getWriter().write("{\"error\": \"Invalid token\"}");
+            return;
         }
-    
+
         filterChain.doFilter(request, response);
     }
 }
-
