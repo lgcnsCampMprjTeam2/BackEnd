@@ -56,6 +56,7 @@ pipeline {
                       echo "배포할 포트: \$IDLE_PORT, 적용할 프로파일: \$NEXT_PROFILE"
 
                       docker stop app-\$IDLE_PORT || true
+                      docker wait app-\$IDLE_PORT
                       docker rm app-\$IDLE_PORT || true
                       docker pull $DOCKER_IMAGE
 
