@@ -1,9 +1,12 @@
 package com.lgcns.backend.user.service;
 
 
+import com.lgcns.backend.Like.repository.LikeRepository;
+import com.lgcns.backend.comment.respository.CommentRepository;
 import com.lgcns.backend.global.code.GeneralErrorCode;
 import com.lgcns.backend.global.code.GeneralSuccessCode;
 import com.lgcns.backend.global.response.CustomResponse;
+import com.lgcns.backend.post.respository.PostRepository;
 import com.lgcns.backend.security.util.JwtUtil;
 import com.lgcns.backend.user.domain.User;
 import com.lgcns.backend.user.dto.request.LoginRequestDto;
@@ -49,6 +52,12 @@ public class UserService {
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private CSAnswerRepository csAnswerRepository;
+    @Autowired
+    private PostRepository postRepository;
+    @Autowired
+    private LikeRepository likeRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     // 회원가입 기능
     public void signUp(SignUpRequestDto dto, String imageurl) {
@@ -120,7 +129,12 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
 
+        // 참조 테이블에 있는 데이터 전부 삭제
         csAnswerRepository.deleteByUser(user);
+        postRepository.deleteByUser(user);
+        likeRepository.deleteByUser(user);
+        commentRepository.deleteByUser(user);
+
         userRepository.delete(user);
     }
 
