@@ -14,6 +14,8 @@ import com.lgcns.backend.user.dto.request.SignUpRequestDto;
 import com.lgcns.backend.user.dto.request.UpdateUserRequestDto;
 import com.lgcns.backend.user.repository.UserRepository;
 import com.lgcns.backend.user.config.RedisConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.lgcns.backend.csanswer.repository.CSAnswerRepository;
 
@@ -125,17 +128,40 @@ public class UserService {
     }
 
     // 회원 탈퇴 기능
+    @Transactional
     public void deleteUser(String email) {
+        // 로깅을 위한 Logger 객체
+        Logger logger = LoggerFactory.getLogger(getClass());
+
+        // 사용자가 존재하는지 확인
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
 
-        // 참조 테이블에 있는 데이터 전부 삭제
-        csAnswerRepository.deleteByUser(user);
-        postRepository.deleteByUser(user);
-        likeRepository.deleteByUser(user);
-        commentRepository.deleteByUser(user);
+        try {
+            logger.info("사용자 삭제 시작: " + user.getEmail());
 
-        userRepository.delete(user);
+            // 연관된 데이터 삭제 (CSAnswer, Post, Like, Comment)
+            csAnswerRepository.deleteByUser(user);
+            logger.info("CSAnswer 삭제 완료: " + user.getEmail());
+
+            postRepository.deleteByUser(user);
+            logger.info("Post 삭제 완료: " + user.getEmail());
+
+            likeRepository.deleteByUser(user);
+            logger.info("Like 삭제 완료: " + user.getEmail());
+
+            commentRepository.deleteByUser(user);
+            logger.info("Comment 삭제 완료: " + user.getEmail());
+
+            // 사용자 삭제
+            userRepository.delete(user);
+            logger.info("사용자 삭제 완료: " + user.getEmail());
+
+        } catch (Exception e) {
+            // 예외 발생 시 로그 기록
+            logger.error("사용자 삭제 중 오류 발생: " + email, e);
+            throw new RuntimeException("연관된 데이터 삭제 중 오류 발생", e);
+        }
     }
 
     // 회원 정보 변경 기능
