@@ -77,8 +77,7 @@ public class CommentResponse {
             @JsonProperty("comment_id")
             private Long commentId;
 
-            @JsonProperty("user_id")
-            private Long userId;
+            private String username;
             private String content;
 
             @JsonProperty("created_at")
@@ -87,7 +86,7 @@ public class CommentResponse {
             public static CommentSummary fromEntity(Comment comment){
                 return CommentSummary.builder()
                         .commentId(comment.getId())
-                        .userId(comment.getUser().getId())
+                        .username(comment.getUser().getNickname())
                         .content(comment.getContent())
                         .createdAt(comment.getCreatedAt())
                         .build();
